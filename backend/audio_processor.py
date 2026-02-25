@@ -7,12 +7,19 @@ from pathlib import Path
 AGENT_KEYWORDS = [
     "thank you for calling",
     "how can i help",
+    "how can i help you today",
     "how may i assist",
+    "i'll be happy to assist",
+    "happy to assist",
     "calling",
     "this is",
     "my name is",
     "support",
-    "customer service"
+    "customer service",
+    "let me check",
+    "i am transferring",
+    "transferring",
+    "please hold"
 ]
 
 def classify_role(transcript: str) -> str:
