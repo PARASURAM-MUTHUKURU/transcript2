@@ -20,7 +20,7 @@ export interface AuditResult {
 
 export async function auditTranscript(transcript: string, type: 'chat' | 'call'): Promise<AuditResult> {
   const model = "gemini-2.5-flash";
-  
+
   const prompt = `
     Analyze the following customer support ${type} transcript and provide a quality audit.
     
@@ -53,9 +53,9 @@ export async function auditTranscript(transcript: string, type: 'chat' | 'call')
           resolution_score: { type: Type.INTEGER },
           compliance_score: { type: Type.INTEGER },
           overall_score: { type: Type.INTEGER },
-          violations: { 
+          violations: {
             type: Type.ARRAY,
-            items: { 
+            items: {
               type: Type.OBJECT,
               properties: {
                 type: { type: Type.STRING },
@@ -83,7 +83,7 @@ export async function auditTranscript(transcript: string, type: 'chat' | 'call')
 
 export async function transcribeAudio(base64Data: string, mimeType: string): Promise<string> {
   const model = "gemini-2.5-flash";
-  
+
   const response = await ai.models.generateContent({
     model,
     contents: [
@@ -93,7 +93,20 @@ export async function transcribeAudio(base64Data: string, mimeType: string): Pro
           data: base64Data
         }
       },
-      { text: "Transcribe this customer support call audio accurately. Provide only the transcript text." }
+      {
+        text: `Transcribe this customer support call audio accurately. 
+      CRITICAL INSTRUCTION: You must differentiate between the two speakers. 
+      Format the output so each line starts with EXACTLY either "Agent: " or "Customer: ". 
+      
+      To identify the agent, look for heuristic patterns such as:
+      - "Thank you for calling"
+      - "How can I help you today"
+      - "I'll be happy to assist"
+      - "Let me check"
+      - "I am transferring"
+      - "Please hold"
+      
+      Provide only the transcript text.` }
     ]
   });
 
