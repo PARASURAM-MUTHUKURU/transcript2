@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-bg: #05070a;
+  --color-brand-surface: #0d1117;
+  --color-brand-card: #161b22;
+  --color-brand-border: #30363d;
+  --color-brand-accent: #f27d26;
+  --color-brand-red: #f85149;
+  --color-brand-green: #3fb950;
+  --color-brand-blue: #58a6ff;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-bg text-zinc-100 antialiased;
+  }
+}
+
+.waveform-bar {
+  @apply w-1 bg-brand-accent/40 rounded-full transition-all duration-300;
+}
+
+.waveform-bar.active {
+  @apply bg-brand-accent;
+}
+
+.transcript-bubble-customer {
+  @apply bg-[#1c2128] border border-brand-border/50 rounded-2xl p-4 max-w-[80%] relative;
+}
+
+.transcript-bubble-agent {
+  @apply bg-[#0d1117] border border-brand-border/50 rounded-2xl p-4 max-w-[80%] ml-auto relative;
+}
+
+.violation-tag {
+  @apply bg-brand-red/10 border border-brand-red/20 text-brand-red text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mt-2 flex items-center gap-1.5;
+}
+
