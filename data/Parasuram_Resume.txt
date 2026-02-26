@@ -1,0 +1,95 @@
+PARASURAM MUTHUKURU
+AI Engineer | Machine Learning | Cybersecurity
+m.parasuram5206etf@gmail.com | LinkedIn: linkedin.com/in/parasuram-muthukuru-0431a3261
+GitHub: github.com/PARASURAM-MUTHUKURU
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROFESSIONAL SUMMARY
+AI Engineer and Full-Stack Developer with expertise in Machine Learning, Computer Vision, and Cybersecurity.
+Passionate about building intelligent systems that solve real-world problems. Skilled in Python, TensorFlow,
+FastAPI, React, and Linux environments.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EDUCATION
+B.Tech in Computer Science & Engineering (Artificial Intelligence)
+• Specialization in AI and Machine Learning
+• Coursework: Data Structures, Algorithms, Computer Vision, Neural Networks, Cybersecurity
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TECHNICAL EXPERTISE
+
+Languages: Python, Java, C, JavaScript
+Frontend: HTML, CSS, React, Bootstrap, Tailwind CSS
+Backend: Flask, FastAPI, Node.js
+AI/ML: TensorFlow, PyTorch, Scikit-Learn, OpenCV, Pandas, NumPy
+Databases: MySQL, MongoDB, Firebase, PostgreSQL
+Tools & Platforms: Git, GitHub, Docker, Linux (Ubuntu), VS Code
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FEATURED PROJECTS
+
+1. Malware Detection Using Machine Learning
+   • Built ML models for malware classification using behavioral analysis
+   • Achieved high accuracy through ensemble methods and feature engineering
+   • Tech Stack: Python, TensorFlow, Scikit-Learn
+
+2. Android Malware Detection (Syscall Subsequences)
+   • Developed system call analysis for Android app security
+   • Implemented pattern recognition algorithms
+   • Tech Stack: Python, OpenCV, Deep Learning
+
+3. Self-Driving Car – Lane & Object Detection
+   • Computer vision project for autonomous vehicle simulation
+   • Lane detection using image processing and CNN
+   • Real-time object detection with YOLO
+   • Tech Stack: Python, OpenCV, TensorFlow
+
+4. Hospital Management System
+   • Full-stack application for managing hospital operations
+   • Database design and backend logic
+   • UI development with Tkinter
+   • Tech Stack: Python, MongoDB, Tkinter
+
+5. Phishing Detection Using AI
+   • Email and webpage phishing detection system
+   • NLP and machine learning for threat identification
+   • Tech Stack: Python, TensorFlow, NLP Libraries
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CERTIFICATIONS & TRAINING
+• Machine Learning Specialization
+• TensorFlow & Computer Vision
+• Cybersecurity Fundamentals
+• Flask & FastAPI Web Development
+• Linux Administration & Security
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CAREER INTERESTS
+• AI/ML Engineer
+• Data Scientist
+• Cybersecurity Analyst
+• Research-Oriented Developer
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KEY SKILLS & COMPETENCIES
+✓ Machine Learning Model Development & Deployment
+✓ Computer Vision & Image Processing
+✓ Full-Stack Web Application Development
+✓ Cybersecurity & Threat Analysis
+✓ Data Analysis & Visualization
+✓ API Development & Integration
+✓ Database Design & Management
+✓ Linux System Administration
+✓ Version Control & Collaborative Development
+✓ Problem Solving & Algorithm Design
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"Engineering intelligent systems for real-world impact."

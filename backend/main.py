@@ -6,6 +6,9 @@ import sqlite3
 import json
 import os
 from pathlib import Path
+from rag.pipeline import RAGPipeline
+from fastapi import UploadFile, File, Form
+import shutil
 
 app = FastAPI()
 
@@ -17,6 +20,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize RAG Pipeline
+# Note: reset=True in RAGPipeline.__init__ will wipe the collection. 
+# For production, we'd set this to False after first initialization.
+try:
+    rag_pipeline = RAGPipeline()
+except Exception as e:
+    print(f"Failed to initialize RAG Pipeline: {e}")
+    rag_pipeline = None
 
 # SQLite database setup (reuse existing db)
 DB_PATH = Path(__file__).parent.parent / "auditor.db"
@@ -90,6 +102,45 @@ def create_audit(audit: AuditRequest):
     last_id = cursor.lastrowid
     conn.close()
     return {"id": last_id}
+
+@app.post("/api/ingest")
+async def ingest_document(file: UploadFile = File(...)):
+    if not rag_pipeline:
+        return {"error": "RAG Pipeline not initialized"}
+    
+    # Save file temporarily
+    temp_path = Path("temp") / file.filename
+    temp_path.parent.mkdir(exist_ok=True)
+    
+    with open(temp_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    try:
+        rag_pipeline.ingest_file(str(temp_path))
+        return {"message": f"Successfully ingested {file.filename}"}
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        if temp_path.exists():
+            os.remove(temp_path)
+
+@app.post("/api/audit-with-rag")
+async def audit_with_rag(request: Request):
+    data = await request.json()
+    transcript = data.get("transcript", "")
+    
+    if not rag_pipeline:
+        return {"error": "RAG Pipeline not initialized"}
+    
+    # Query RAG for policy context
+    question = f"Analyze this support transcript for compliance and quality issues based on policy: {transcript[:1000]}"
+    answer, sources = rag_pipeline.query(question)
+    
+    # Simple parsing or just return the RAG result as suggestions
+    return {
+        "suggestions": answer,
+        "sources": sources
+    }
 
 @app.get("/api/analytics")
 def get_analytics():
