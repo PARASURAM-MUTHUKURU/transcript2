@@ -21,6 +21,7 @@ import { AuditSidebar } from './components/AuditSidebar';
 import { TranscriptView } from './components/TranscriptView';
 import { AuditModal } from './components/AuditModal';
 import { ReportsView } from './components/ReportsView';
+import { PolicyView } from './components/PolicyView';
 
 export default function App() {
   const [view, setView] = useState<'dashboard' | 'audits' | 'agents' | 'reports' | 'policy'>('audits');
@@ -259,38 +260,7 @@ export default function App() {
         ) : view === 'reports' ? (
           <ReportsView analytics={analytics} audits={audits} />
         ) : view === 'policy' ? (
-          <div className="flex-1 p-8 overflow-y-auto">
-            <div className="max-w-4xl mx-auto space-y-8">
-              <div className="flex justify-between items-end">
-                <div>
-                  <h2 className="text-3xl font-display font-bold">Policy Management</h2>
-                  <p className="text-zinc-500">Upload training manuals or compliance documents for RAG auditing.</p>
-                </div>
-                <label className="px-6 py-3 bg-brand-accent text-white rounded-xl font-bold text-xs uppercase cursor-pointer hover:bg-brand-accent/90 transition-all flex items-center gap-2">
-                  <Upload size={16} />
-                  Upload Policy Document
-                  <input type="file" className="hidden" onChange={(e) => e.target.files?.[0] && handlePolicyUpload(e.target.files[0])} />
-                </label>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-brand-surface border border-brand-border p-6 rounded-3xl space-y-4">
-                  <div className="flex items-center gap-3 text-brand-accent">
-                    <ShieldCheck size={20} />
-                    <h3 className="font-bold">Active Knowledge Base</h3>
-                  </div>
-                  <p className="text-sm text-zinc-400">The RAG pipeline is connected to Qdrant. All uploaded documents are automatically chunked and indexed for real-time retrieval during audits.</p>
-                </div>
-                <div className="bg-brand-surface border border-brand-border p-6 rounded-3xl space-y-4">
-                  <div className="flex items-center gap-3 text-brand-green">
-                    <Target size={20} />
-                    <h3 className="font-bold">Audit Accuracy</h3>
-                  </div>
-                  <p className="text-sm text-zinc-400">Using "Contextual Audit" increases compliance detection by 45% by cross-referencing transcripts with your specific organizational guidelines.</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <PolicyView handlePolicyUpload={handlePolicyUpload} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-zinc-500">
             <p className="font-display font-bold text-lg">Coming Soon: {view.charAt(0).toUpperCase() + view.slice(1)} View</p>

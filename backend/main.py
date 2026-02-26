@@ -142,6 +142,23 @@ async def audit_with_rag(request: Request):
         "sources": sources
     }
 
+@app.post("/api/query")
+async def query_rag(request: Request):
+    data = await request.json()
+    question = data.get("question", "")
+    
+    if not rag_pipeline:
+        return {"error": "RAG Pipeline not initialized"}
+    
+    try:
+        answer, sources = rag_pipeline.query(question)
+        return {
+            "answer": answer,
+            "sources": sources
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/api/analytics")
 def get_analytics():
     conn = get_db_connection()
