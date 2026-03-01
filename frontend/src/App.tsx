@@ -25,9 +25,10 @@ import { ReportsView } from './components/ReportsView';
 // import { PolicyView } from './components/PolicyView';
 import { RAGSearch } from './components/RAGSearch';
 import { AgentsDashboard } from './components/AgentsDashboard';
+import { LandingPage } from './components/LandingPage';
 
 export default function App() {
-  const [view, setView] = useState<'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge'>('audits');
+  const [view, setView] = useState<'landing' | 'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge'>('landing');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [audits, setAudits] = useState<Audit[]>([]);
@@ -148,7 +149,7 @@ export default function App() {
       {/* Top Navigation */}
       <header className="h-16 border-b border-brand-border bg-brand-surface flex items-center justify-between px-6 sticky top-0 z-50">
         <div className="flex items-center gap-8">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setView('landing')}>
             <div className="bg-brand-accent p-1.5 rounded-lg shadow-[0_0_15px_rgba(242,125,38,0.3)]">
               <ShieldCheck className="text-white" size={20} />
             </div>
@@ -156,10 +157,14 @@ export default function App() {
           </div>
 
           <nav className="hidden md:flex items-center gap-1">
-            <NavItem icon={MessageSquare} label="Transcript Review" active={view === 'audits'} onClick={() => setView('audits')} />
-            <NavItem icon={BookOpen} label="Knowledge Base" active={view === 'knowledge'} onClick={() => setView('knowledge')} />
-            <NavItem icon={Users} label="Agents" active={view === 'agents'} onClick={() => setView('agents')} />
-            <NavItem icon={History} label="Reports" active={view === 'reports'} onClick={() => setView('reports')} />
+            {view !== 'landing' && (
+              <>
+                <NavItem icon={MessageSquare} label="Transcript Review" active={view === 'audits'} onClick={() => setView('audits')} />
+                <NavItem icon={BookOpen} label="Knowledge Base" active={view === 'knowledge'} onClick={() => setView('knowledge')} />
+                <NavItem icon={Users} label="Agents" active={view === 'agents'} onClick={() => setView('agents')} />
+                <NavItem icon={History} label="Reports" active={view === 'reports'} onClick={() => setView('reports')} />
+              </>
+            )}
           </nav>
         </div>
 
@@ -178,7 +183,9 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex overflow-hidden">
-        {view === 'audits' ? (
+        {view === 'landing' ? (
+          <LandingPage onGetStarted={() => setView('audits')} />
+        ) : view === 'audits' ? (
           <>
             <CallHistorySidebar
               audits={audits}
