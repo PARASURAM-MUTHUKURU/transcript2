@@ -1,0 +1,11 @@
+.env.local
+.__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+auditor_db/
+temp_ingest/
+__pycache__

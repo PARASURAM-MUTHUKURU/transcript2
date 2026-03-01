@@ -13,7 +13,7 @@ import sys
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+load_dotenv(".env.local")
 
 # Add RAG directory to sys.path for imports
 RAG_PATH = Path(__file__).parent / "rag"
