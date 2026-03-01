@@ -9,7 +9,8 @@ import {
   Bell,
   FileAudio,
   Upload,
-  Target
+  Target,
+  BookOpen
 } from 'lucide-react';
 import { auditTranscript, transcribeAudio } from './services/geminiService';
 import { Agent, Audit, Analytics } from './types';
@@ -21,10 +22,11 @@ import { AuditSidebar } from './components/AuditSidebar';
 import { TranscriptView } from './components/TranscriptView';
 import { AuditModal } from './components/AuditModal';
 import { ReportsView } from './components/ReportsView';
-import { PolicyView } from './components/PolicyView';
+// import { PolicyView } from './components/PolicyView';
+import { RAGSearch } from './components/RAGSearch';
 
 export default function App() {
-  const [view, setView] = useState<'dashboard' | 'audits' | 'agents' | 'reports' | 'policy'>('audits');
+  const [view, setView] = useState<'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge'>('audits');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [audits, setAudits] = useState<Audit[]>([]);
@@ -41,8 +43,7 @@ export default function App() {
     transcript: '',
     type: 'call' as 'chat' | 'call',
     audioData: '',
-    mimeType: '',
-    useRAG: false
+    mimeType: ''
   });
 
   useEffect(() => {
@@ -84,28 +85,7 @@ export default function App() {
     if (!newAuditData.agentId || !newAuditData.transcript) return;
     setIsAuditing(true);
     try {
-      let result;
-      let ragSources = [];
-
-      if (newAuditData.useRAG) {
-        // First get RAG context
-        const ragRes = await fetch('/api/audit-with-rag', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transcript: newAuditData.transcript })
-        });
-        const ragData = await ragRes.json();
-
-        // Use RAG result to enhance the audit
-        result = await auditTranscript(
-          `${newAuditData.transcript}\n\n[POLICY CONTEXT]: ${ragData.suggestions}`,
-          newAuditData.type
-        );
-        ragSources = ragData.sources;
-      } else {
-        result = await auditTranscript(newAuditData.transcript, newAuditData.type);
-      }
-
+      const result = await auditTranscript(newAuditData.transcript, newAuditData.type);
       const auditPayload = {
         agent_id: parseInt(newAuditData.agentId),
         transcript: newAuditData.transcript,
@@ -113,9 +93,7 @@ export default function App() {
         audio_data: newAuditData.audioData,
         mime_type: newAuditData.mimeType,
         ...result,
-        suggestions: newAuditData.useRAG
-          ? `${result.suggestions}\n\nContextual Policy Match:\n${ragSources.map((s: any) => `- ${s.source} (Relevance: ${Math.round(s.top_score * 100)}%)`).join('\n')}`
-          : result.suggestions
+        suggestions: result.suggestions
       };
 
       const saveRes = await fetch('/api/audits', {
@@ -127,7 +105,7 @@ export default function App() {
       await saveRes.json();
       await fetchData();
       setShowNewAuditModal(false);
-      setNewAuditData({ agentId: '', transcript: '', type: 'call', audioData: '', mimeType: '', useRAG: false });
+      setNewAuditData({ agentId: '', transcript: '', type: 'call', audioData: '', mimeType: '' });
     } catch (error) {
       console.error("Audit failed:", error);
     } finally {
@@ -135,21 +113,6 @@ export default function App() {
     }
   };
 
-  const handlePolicyUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await fetch('/api/ingest', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      alert(data.message || data.error);
-    } catch (error) {
-      console.error("Policy upload failed:", error);
-    }
-  };
 
   const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -193,9 +156,9 @@ export default function App() {
 
           <nav className="hidden md:flex items-center gap-1">
             <NavItem icon={MessageSquare} label="Transcript Review" active={view === 'audits'} onClick={() => setView('audits')} />
+            <NavItem icon={BookOpen} label="Knowledge Base" active={view === 'knowledge'} onClick={() => setView('knowledge')} />
             <NavItem icon={Users} label="Agents" active={view === 'agents'} onClick={() => setView('agents')} />
             <NavItem icon={History} label="Reports" active={view === 'reports'} onClick={() => setView('reports')} />
-            <NavItem icon={ShieldCheck} label="Policies" active={view === 'policy'} onClick={() => setView('policy')} />
           </nav>
         </div>
 
@@ -259,8 +222,8 @@ export default function App() {
           </>
         ) : view === 'reports' ? (
           <ReportsView analytics={analytics} audits={audits} />
-        ) : view === 'policy' ? (
-          <PolicyView handlePolicyUpload={handlePolicyUpload} />
+        ) : view === 'knowledge' ? (
+          <RAGSearch />
         ) : (
           <div className="flex-1 flex items-center justify-center text-zinc-500">
             <p className="font-display font-bold text-lg">Coming Soon: {view.charAt(0).toUpperCase() + view.slice(1)} View</p>
