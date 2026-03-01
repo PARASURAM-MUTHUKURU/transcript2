@@ -115,8 +115,12 @@ def get_analytics():
     
     stats_query = """
       SELECT 
+        ag.id as agent_id,
         ag.name as agent_name,
         AVG(a.overall_score) as avg_score,
+        AVG(a.empathy_score) as avg_empathy,
+        AVG(a.resolution_score) as avg_resolution,
+        AVG(a.compliance_score) as avg_compliance,
         COUNT(a.id) as total_audits
       FROM agents ag
       LEFT JOIN audits a ON ag.id = a.agent_id
@@ -127,7 +131,10 @@ def get_analytics():
     trend_query = """
       SELECT 
         strftime('%Y-%m-%d', created_at) as date,
-        AVG(overall_score) as avg_score
+        AVG(overall_score) as avg_score,
+        AVG(empathy_score) as avg_empathy,
+        AVG(resolution_score) as avg_resolution,
+        AVG(compliance_score) as avg_compliance
       FROM audits
       GROUP BY date
       ORDER BY date ASC
@@ -140,6 +147,43 @@ def get_analytics():
     return {
         "stats": [dict(ix) for ix in stats],
         "trend": [dict(ix) for ix in trend]
+    }
+
+@app.get("/api/agents/{agent_id}/analytics")
+def get_agent_analytics(agent_id: int):
+    conn = get_db_connection()
+    
+    # Get agent's personal trend
+    trend_query = """
+      SELECT 
+        strftime('%Y-%m-%d', created_at) as date,
+        AVG(overall_score) as avg_score,
+        AVG(empathy_score) as avg_empathy,
+        AVG(resolution_score) as avg_resolution,
+        AVG(compliance_score) as avg_compliance
+      FROM audits
+      WHERE agent_id = ?
+      GROUP BY date
+      ORDER BY date ASC
+      LIMIT 30
+    """
+    trend = conn.execute(trend_query, (agent_id,)).fetchall()
+    
+    # Get agent's recent audits
+    recent_query = """
+      SELECT id, overall_score, created_at, type
+      FROM audits
+      WHERE agent_id = ?
+      ORDER BY created_at DESC
+      LIMIT 5
+    """
+    recent = conn.execute(recent_query, (agent_id,)).fetchall()
+    
+    conn.close()
+    
+    return {
+        "trend": [dict(ix) for ix in trend],
+        "recent_audits": [dict(ix) for ix in recent]
     }
 
 # RAG Endpoints

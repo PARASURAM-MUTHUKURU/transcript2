@@ -7,7 +7,7 @@ load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / ".env", override=T
 BASE_DIR = Path(__file__).parent.parent
 
 EMBEDDING_MODEL = "models/gemini-embedding-001"
-LLM_MODEL       = "gemini-2.5-flash"
+LLM_MODEL       = "gemini-2.5-flash-lite"
 EMBEDDING_DIM   = 768
 
 CHUNK_SIZE      = 1000

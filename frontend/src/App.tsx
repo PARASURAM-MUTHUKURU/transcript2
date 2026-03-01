@@ -24,6 +24,7 @@ import { AuditModal } from './components/AuditModal';
 import { ReportsView } from './components/ReportsView';
 // import { PolicyView } from './components/PolicyView';
 import { RAGSearch } from './components/RAGSearch';
+import { AgentsDashboard } from './components/AgentsDashboard';
 
 export default function App() {
   const [view, setView] = useState<'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge'>('audits');
@@ -224,6 +225,8 @@ export default function App() {
           <ReportsView analytics={analytics} audits={audits} />
         ) : view === 'knowledge' ? (
           <RAGSearch />
+        ) : view === 'agents' ? (
+          <AgentsDashboard analytics={analytics} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-zinc-500">
             <p className="font-display font-bold text-lg">Coming Soon: {view.charAt(0).toUpperCase() + view.slice(1)} View</p>
