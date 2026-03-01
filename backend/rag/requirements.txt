@@ -2,7 +2,7 @@ python-dotenv
 PyMuPDF
 python-docx
 qdrant-client
-google-generativeai
+google-genai
 langchain-google-genai
 langchain-core
 langchain-text-splitters

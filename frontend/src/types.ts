@@ -17,7 +17,39 @@ export interface Audit extends AuditResult {
   duration?: string;
 }
 
+export interface RecentAudit {
+  id: number;
+  overall_score: number;
+  created_at: string;
+  type: string;
+}
+
+export interface AgentAnalytics {
+  trend: {
+    date: string;
+    avg_score: number;
+    avg_empathy: number;
+    avg_resolution: number;
+    avg_compliance: number;
+  }[];
+  recent_audits: RecentAudit[];
+}
+
 export interface Analytics {
-  stats: { agent_name: string; avg_score: number; total_audits: number }[];
-  trend: { date: string; avg_score: number }[];
+  stats: {
+    agent_id: number;
+    agent_name: string;
+    avg_score: number;
+    avg_empathy: number;
+    avg_resolution: number;
+    avg_compliance: number;
+    total_audits: number
+  }[];
+  trend: {
+    date: string;
+    avg_score: number;
+    avg_empathy: number;
+    avg_resolution: number;
+    avg_compliance: number;
+  }[];
 }

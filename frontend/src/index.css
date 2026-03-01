@@ -16,9 +16,34 @@
   --color-brand-blue: #58a6ff;
 }
 
+
 @layer base {
   body {
     @apply bg-brand-bg text-zinc-100 antialiased;
+  }
+
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-brand-surface;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-accent/20 rounded-full border-2 border-brand-surface transition-colors;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-accent/50;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-accent) var(--color-brand-surface);
   }
 }
 

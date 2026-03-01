@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
 
 export interface Violation {
   type: string;
@@ -19,7 +19,7 @@ export interface AuditResult {
 }
 
 export async function auditTranscript(transcript: string, type: 'chat' | 'call'): Promise<AuditResult> {
-  const model = "gemini-2.5-flash";
+  const model = "gemini-2.5-flash-lite";
 
   const prompt = `
     Analyze the following customer support ${type} transcript and provide a quality audit.
@@ -82,7 +82,7 @@ export async function auditTranscript(transcript: string, type: 'chat' | 'call')
 }
 
 export async function transcribeAudio(base64Data: string, mimeType: string): Promise<string> {
-  const model = "gemini-2.5-flash";
+  const model = "gemini-2.5-flash-lite";
 
   const response = await ai.models.generateContent({
     model,
