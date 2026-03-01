@@ -1,14 +1,14 @@
-from .config import (
+from src.config import (
     EMBEDDING_MODEL, EMBEDDING_DIM, LLM_MODEL,
     CHUNK_SIZE, CHUNK_OVERLAP,
     QDRANT_URL, QDRANT_API_KEY, COLLECTION_NAME,
     GOOGLE_API_KEY
 )
-from .document_loader import load_document
-from .chunker import get_recursive_chunker
-from .embedder import GeminiEmbedder
-from .vector_store import QdrantVectorStore
-from .llm import GeminiLLM
+from src.document_loader import load_document
+from src.chunker import get_recursive_chunker
+from src.embedder import GeminiEmbedder
+from src.vector_store import QdrantVectorStore
+from src.llm import GeminiLLM
 
 class RAGPipeline:
     def __init__(self):
@@ -22,13 +22,18 @@ class RAGPipeline:
             QDRANT_API_KEY, 
             COLLECTION_NAME, 
             EMBEDDING_DIM, 
-            reset=True 
+            reset=False 
         )
         self.llm = GeminiLLM(LLM_MODEL, GOOGLE_API_KEY)
 
     def ingest_file(self, file_path: str):
         text, source = load_document(file_path)
         if not text:
+            return
+
+        # NEW: Skip if already in Qdrant
+        if self.vector_store.has_source(source):
+            print(f"Skipping {source} (already ingested)")
             return
 
         docs = self.chunker.create_documents([text], metadatas=[{"source": source}])

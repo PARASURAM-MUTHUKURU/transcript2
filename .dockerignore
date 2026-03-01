@@ -1,0 +1,15 @@
+.venv
+__pycache__
+*.pyc
+.git
+.env.local
+node_modules
+dist
+auditor.db
+qdrant_storage
+Dockerfile
+docker-compose.yaml
+brain
+implementation_plan*.md
+task.md
+walkthrough.md

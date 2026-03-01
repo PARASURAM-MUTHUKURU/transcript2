@@ -6,11 +6,25 @@ import sqlite3
 import json
 import os
 from pathlib import Path
-from rag.pipeline import RAGPipeline
 from fastapi import UploadFile, File, Form
 import shutil
+import shutil
+import sys
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Add RAG directory to sys.path for imports
+RAG_PATH = Path(__file__).parent / "rag"
+sys.path.append(str(RAG_PATH))
+
+from src.pipeline import RAGPipeline
 
 app = FastAPI()
+
+# Initialize RAG Pipeline
+rag_pipeline = RAGPipeline()
 
 # Enable CORS for the Vite frontend
 app.add_middleware(
@@ -20,15 +34,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize RAG Pipeline
-# Note: reset=True in RAGPipeline.__init__ will wipe the collection. 
-# For production, we'd set this to False after first initialization.
-try:
-    rag_pipeline = RAGPipeline()
-except Exception as e:
-    print(f"Failed to initialize RAG Pipeline: {e}")
-    rag_pipeline = None
 
 # SQLite database setup (reuse existing db)
 DB_PATH = Path(__file__).parent.parent / "auditor.db"
@@ -103,61 +108,6 @@ def create_audit(audit: AuditRequest):
     conn.close()
     return {"id": last_id}
 
-@app.post("/api/ingest")
-async def ingest_document(file: UploadFile = File(...)):
-    if not rag_pipeline:
-        return {"error": "RAG Pipeline not initialized"}
-    
-    # Save file temporarily
-    temp_path = Path("temp") / file.filename
-    temp_path.parent.mkdir(exist_ok=True)
-    
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    try:
-        rag_pipeline.ingest_file(str(temp_path))
-        return {"message": f"Successfully ingested {file.filename}"}
-    except Exception as e:
-        return {"error": str(e)}
-    finally:
-        if temp_path.exists():
-            os.remove(temp_path)
-
-@app.post("/api/audit-with-rag")
-async def audit_with_rag(request: Request):
-    data = await request.json()
-    transcript = data.get("transcript", "")
-    
-    if not rag_pipeline:
-        return {"error": "RAG Pipeline not initialized"}
-    
-    # Query RAG for policy context
-    question = f"Analyze this support transcript for compliance and quality issues based on policy: {transcript[:1000]}"
-    answer, sources = rag_pipeline.query(question)
-    
-    # Simple parsing or just return the RAG result as suggestions
-    return {
-        "suggestions": answer,
-        "sources": sources
-    }
-
-@app.post("/api/query")
-async def query_rag(request: Request):
-    data = await request.json()
-    question = data.get("question", "")
-    
-    if not rag_pipeline:
-        return {"error": "RAG Pipeline not initialized"}
-    
-    try:
-        answer, sources = rag_pipeline.query(question)
-        return {
-            "answer": answer,
-            "sources": sources
-        }
-    except Exception as e:
-        return {"error": str(e)}
 
 @app.get("/api/analytics")
 def get_analytics():
@@ -191,6 +141,35 @@ def get_analytics():
         "stats": [dict(ix) for ix in stats],
         "trend": [dict(ix) for ix in trend]
     }
+
+# RAG Endpoints
+class RAGQueryRequest(BaseModel):
+    question: str
+
+@app.post("/api/rag/query")
+async def rag_query(request: RAGQueryRequest):
+    answer, sources = rag_pipeline.query(request.question)
+    return {"answer": answer, "sources": sources}
+
+@app.post("/api/rag/ingest")
+async def rag_ingest(file: UploadFile = File(...)):
+    # Create temp directory if not exists
+    temp_dir = Path(__file__).parent / "temp_ingest"
+    temp_dir.mkdir(exist_ok=True)
+    
+    file_path = temp_dir / file.filename
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    try:
+        rag_pipeline.ingest_file(str(file_path))
+        return {"status": "success", "filename": file.filename}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        # Clean up temp file
+        if file_path.exists():
+            file_path.unlink()
 
 if __name__ == "__main__":
     import uvicorn

@@ -25,6 +25,13 @@ class QdrantVectorStore:
                 vectors_config=models.VectorParams(size=vector_dim, distance=models.Distance.COSINE)
             )
             print(f"Created fresh collection: {collection_name} (Dim: {vector_dim})")
+            
+            # Index source field for efficient skipping
+            self.client.create_payload_index(
+                collection_name=self.collection_name,
+                field_name="source",
+                field_schema=models.PayloadSchemaType.KEYWORD
+            )
         else:
             print(f"Using existing collection: {collection_name}")
 
@@ -72,3 +79,21 @@ class QdrantVectorStore:
             }
             for hit in response.points
         ]
+
+    def has_source(self, source_name: str) -> bool:
+        """Check if any points exist for the given source name."""
+        try:
+            # results[0] is the list of points, results[1] is the next offset
+            results = self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=models.Filter(
+                    must=[models.FieldCondition(key="source", match=models.MatchValue(value=source_name))]
+                ),
+                limit=1,
+                with_payload=False,
+                with_vectors=False
+            )
+            return len(results[0]) > 0
+        except Exception as e:
+            print(f"Error checking source existence: {e}")
+            return False

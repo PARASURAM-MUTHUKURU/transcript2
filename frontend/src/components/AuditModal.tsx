@@ -14,7 +14,6 @@ interface AuditModalProps {
     type: 'chat' | 'call';
     audioData: string;
     mimeType: string;
-    useRAG: boolean;
   };
   setNewAuditData: React.Dispatch<React.SetStateAction<{
     agentId: string;
@@ -22,7 +21,6 @@ interface AuditModalProps {
     type: 'chat' | 'call';
     audioData: string;
     mimeType: string;
-    useRAG: boolean;
   }>>;
   handleAudioUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleRunAudit: () => void;
@@ -112,25 +110,6 @@ export const AuditModal = ({
                   className="w-full h-48 bg-brand-bg border border-brand-border rounded-2xl p-4 text-sm outline-none focus:ring-1 focus:ring-brand-accent resize-none font-mono"
                   placeholder="Paste transcript here..."
                 />
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-brand-bg border border-brand-border rounded-2xl">
-                <div className="space-y-0.5">
-                  <p className="text-xs font-bold">Contextual Policy Audit</p>
-                  <p className="text-[10px] text-zinc-500">Cross-reference with uploaded policy documents using RAG.</p>
-                </div>
-                <button
-                  onClick={() => setNewAuditData(prev => ({ ...prev, useRAG: !prev.useRAG }))}
-                  className={cn(
-                    "w-12 h-6 rounded-full transition-all relative",
-                    newAuditData.useRAG ? "bg-brand-accent" : "bg-zinc-800"
-                  )}
-                >
-                  <div className={cn(
-                    "absolute top-1 w-4 h-4 rounded-full bg-white transition-all",
-                    newAuditData.useRAG ? "left-7" : "left-1"
-                  )} />
-                </button>
               </div>
 
               <button

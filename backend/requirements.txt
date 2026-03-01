@@ -3,10 +3,4 @@ uvicorn
 python-dotenv
 pydub
 SpeechRecognition
-qdrant-client
-langchain
-langchain-google-genai
-pypdf
-python-docx
-langchain-community
-pymupdf
+python-multipart

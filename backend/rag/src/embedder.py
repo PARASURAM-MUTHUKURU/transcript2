@@ -22,10 +22,14 @@ class GeminiEmbedder:
         return embeddings
 
     def embed_query(self, query: str) -> list[float]:
-        result = genai.embed_content(
-            model=self.model,
-            content=query,
-            task_type="retrieval_query",
-            output_dimensionality=self.dimension
-        )
-        return result["embedding"]
+        try:
+            result = genai.embed_content(
+                model=self.model,
+                content=query,
+                task_type="retrieval_query",
+                output_dimensionality=self.dimension
+            )
+            return result["embedding"]
+        except Exception as e:
+            print(f"Embedding query failed: {e}")
+            return []

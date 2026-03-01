@@ -1,0 +1,15 @@
+.venv/
+data/
+qdrant_db/
+qdrant_storage/
+__pycache__/
+*.pyc
+.env.local
+.agents/
+.agent/
+_agents/
+_agent/
+brain/
+implementation_plan.md
+task.md
+walkthrough.md

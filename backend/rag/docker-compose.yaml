@@ -1,0 +1,8 @@
+services:
+  rag-app:
+    build: .
+    volumes:
+      - ./data:/app/data
+      - ./.env.local:/app/.env.local
+    stdin_open: true # allows interactive input
+    tty: true # provides a terminal interface
