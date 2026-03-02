@@ -58,36 +58,36 @@ export const AuditModal = ({
           >
             <div className="p-8 space-y-6">
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-display font-bold">New Quality Audit</h3>
-                <button onClick={onClose} className="text-zinc-500 hover:text-white">
+                <h3 className="text-2xl font-display font-bold text-text-primary">New Quality Audit</h3>
+                <button onClick={onClose} className="text-text-secondary hover:text-text-primary">
                   <MoreHorizontal size={24} />
                 </button>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Agent</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Agent</label>
                   <select
                     value={newAuditData.agentId}
                     onChange={(e) => setNewAuditData(prev => ({ ...prev, agentId: e.target.value }))}
-                    className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm outline-none focus:ring-1 focus:ring-brand-accent"
+                    className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-text-primary outline-none focus:ring-1 focus:ring-brand-accent"
                   >
                     <option value="">Select Agent</option>
                     {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Channel</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Channel</label>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setNewAuditData(prev => ({ ...prev, type: 'chat' }))}
-                      className={cn("flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all", newAuditData.type === 'chat' ? "bg-brand-accent border-brand-accent text-white" : "border-brand-border text-zinc-500")}
+                      className={cn("flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all", newAuditData.type === 'chat' ? "bg-brand-accent border-brand-accent text-white" : "border-brand-border text-text-secondary")}
                     >
                       Chat
                     </button>
                     <button
                       onClick={() => setNewAuditData(prev => ({ ...prev, type: 'call' }))}
-                      className={cn("flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all", newAuditData.type === 'call' ? "bg-brand-accent border-brand-accent text-white" : "border-brand-border text-zinc-500")}
+                      className={cn("flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all", newAuditData.type === 'call' ? "bg-brand-accent border-brand-accent text-white" : "border-brand-border text-text-secondary")}
                     >
                       Call
                     </button>
@@ -97,7 +97,7 @@ export const AuditModal = ({
 
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Transcript</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Transcript</label>
                   <label className="cursor-pointer group flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand-accent">
                     <input type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload} />
                     {isTranscribing ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
@@ -107,7 +107,7 @@ export const AuditModal = ({
                 <textarea
                   value={newAuditData.transcript}
                   onChange={(e) => setNewAuditData(prev => ({ ...prev, transcript: e.target.value }))}
-                  className="w-full h-48 bg-brand-bg border border-brand-border rounded-2xl p-4 text-sm outline-none focus:ring-1 focus:ring-brand-accent resize-none font-mono"
+                  className="w-full h-48 bg-brand-bg border border-brand-border rounded-2xl p-4 text-sm text-text-primary outline-none focus:ring-1 focus:ring-brand-accent resize-none font-mono"
                   placeholder="Paste transcript here..."
                 />
               </div>

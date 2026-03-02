@@ -165,13 +165,13 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-bg font-sans text-zinc-100 flex flex-col">
+    <div className="min-h-screen bg-brand-bg font-sans text-text-primary flex flex-col transition-colors duration-300">
       {/* Top Navigation */}
       <header className="h-16 border-b border-brand-border bg-brand-surface flex items-center justify-between px-6 sticky top-0 z-50">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setView('landing')}>
             <div className="bg-brand-accent p-1.5 rounded-lg shadow-[0_0_15px_rgba(242,125,38,0.3)]">
-              <ShieldCheck className="text-white" size={20} />
+              <ShieldCheck className="text-text-primary dark:text-white" size={20} />
             </div>
             <h1 className="font-display font-bold text-xl tracking-tight">AuditAI</h1>
           </div>
@@ -189,9 +189,9 @@ function AppContent() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="relative p-2 text-zinc-400 hover:text-white transition-colors">
+          <button className="relative p-2 text-text-secondary hover:text-text-primary transition-colors">
             <Bell size={20} />
-            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-red text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-brand-surface">
+            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-red text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-brand-surface">
               3
             </span>
           </button>
@@ -229,14 +229,14 @@ function AppContent() {
                   />
                 </>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 gap-6">
+                <div className="flex-1 flex flex-col items-center justify-center text-text-secondary opacity-60 gap-6">
                   <div className="p-8 bg-brand-surface rounded-full border border-brand-border shadow-xl">
-                    <FileAudio size={64} className="opacity-20" />
+                    <FileAudio size={64} className="text-text-secondary opacity-40" />
                   </div>
                   <div className="text-center space-y-4">
                     <div className="space-y-2">
-                      <p className="font-display font-bold text-lg text-zinc-400">No Recording Selected</p>
-                      <p className="text-sm text-zinc-600">Select a call from the history or upload a new one</p>
+                      <p className="font-display font-bold text-lg text-text-primary">No Recording Selected</p>
+                      <p className="text-sm text-text-secondary">Select a call from the history or upload a new one</p>
                     </div>
                     <button
                       onClick={() => setShowNewAuditModal(true)}
@@ -257,7 +257,7 @@ function AppContent() {
         ) : view === 'agents' ? (
           <AgentsDashboard analytics={analytics} />
         ) : (
-          <div className="flex-1 flex items-center justify-center text-zinc-500">
+          <div className="flex-1 flex items-center justify-center text-text-secondary opacity-60">
             <p className="font-display font-bold text-lg">Coming Soon: {view.charAt(0).toUpperCase() + view.slice(1)} View</p>
           </div>
         )}

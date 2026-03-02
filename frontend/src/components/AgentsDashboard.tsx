@@ -78,9 +78,9 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
             {/* Left Sidebar: Agent List */}
             <div className="w-80 border-r border-brand-border bg-brand-surface/20 flex flex-col">
                 <div className="p-6 border-b border-brand-border space-y-4">
-                    <h2 className="text-xl font-display font-black text-white">Agents</h2>
+                    <h2 className="text-xl font-display font-black text-text-primary">Agents</h2>
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary opacity-60" size={16} />
                         <input
                             type="text"
                             placeholder="Search agents..."
@@ -100,16 +100,16 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                 "w-full flex items-center justify-between p-4 rounded-2xl border transition-all group",
                                 selectedAgentId === agent.agent_id
                                     ? "bg-brand-accent/10 border-brand-accent/30"
-                                    : "bg-brand-surface/30 border-brand-border/50 hover:border-zinc-700"
+                                    : "bg-brand-surface/30 border-brand-border/50 hover:border-brand-border"
                             )}
                         >
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-brand-border flex items-center justify-center font-bold text-zinc-400 group-hover:text-brand-accent transition-colors">
+                                <div className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center font-bold text-text-secondary group-hover:text-brand-accent transition-colors">
                                     {agent.agent_name.split(' ').map(n => n[0]).join('')}
                                 </div>
                                 <div className="text-left">
-                                    <p className="text-sm font-bold text-zinc-200">{agent.agent_name}</p>
-                                    <p className="text-[10px] text-zinc-500 font-black uppercase">{agent.total_audits} Audits</p>
+                                    <p className="text-sm font-bold text-text-primary">{agent.agent_name}</p>
+                                    <p className="text-[10px] text-text-secondary font-black uppercase">{agent.total_audits} Audits</p>
                                 </div>
                             </div>
                             <div className="text-right">
@@ -120,7 +120,7 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                     {Math.round(agent.avg_score)}%
                                 </p>
                                 <ChevronRight className={cn(
-                                    "text-zinc-600 transition-transform",
+                                    "text-text-secondary opacity-40 transition-transform",
                                     selectedAgentId === agent.agent_id && "rotate-90 text-brand-accent"
                                 )} size={14} />
                             </div>
@@ -172,10 +172,10 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                                     {selectedAgent?.agent_name.split(' ').map(n => n[0]).join('')}
                                                 </div>
                                                 <div>
-                                                    <h1 className="text-3xl font-display font-black text-white">{selectedAgent?.agent_name}</h1>
+                                                    <h1 className="text-3xl font-display font-black text-text-primary">{selectedAgent?.agent_name}</h1>
                                                     <div className="flex items-center gap-3 mt-1">
-                                                        <span className="text-xs font-bold text-zinc-500">Employee ID: #AG{400 + (selectedAgent?.agent_id || 0)}</span>
-                                                        <div className="w-1 h-1 rounded-full bg-zinc-700"></div>
+                                                        <span className="text-xs font-bold text-text-secondary opacity-70">Employee ID: #AG{400 + (selectedAgent?.agent_id || 0)}</span>
+                                                        <div className="w-1 h-1 rounded-full bg-brand-border"></div>
                                                         <span className="text-xs font-bold text-brand-green">Active Performer</span>
                                                     </div>
                                                 </div>
@@ -184,8 +184,8 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
 
                                         <div className="flex gap-4">
                                             <div className="bg-brand-surface border border-brand-border px-6 py-4 rounded-2xl text-center">
-                                                <p className="text-[10px] font-black uppercase text-zinc-500 mb-1">Overall QAS</p>
-                                                <p className="text-2xl font-display font-black text-white">{Math.round(selectedAgent?.avg_score || 0)}%</p>
+                                                <p className="text-[10px] font-black uppercase text-text-secondary opacity-70 mb-1">Overall QAS</p>
+                                                <p className="text-2xl font-display font-black text-text-primary">{Math.round(selectedAgent?.avg_score || 0)}%</p>
                                             </div>
                                         </div>
                                     </div>
@@ -198,8 +198,8 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                                 {radarData[0]?.A >= 70 ? <ArrowUpRight className="text-brand-green" size={16} /> : <ArrowDownRight className="text-brand-red" size={16} />}
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Empathy Score</p>
-                                                <p className="text-2xl font-display font-black text-white">{radarData[0]?.A}%</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary opacity-70">Empathy Score</p>
+                                                <p className="text-2xl font-display font-black text-text-primary">{radarData[0]?.A}%</p>
                                             </div>
                                         </div>
                                         <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-6 rounded-[2rem] space-y-4">
@@ -208,8 +208,8 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                                 {radarData[1]?.A >= 70 ? <ArrowUpRight className="text-brand-green" size={16} /> : <ArrowDownRight className="text-brand-red" size={16} />}
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Resolution Rate</p>
-                                                <p className="text-2xl font-display font-black text-white">{radarData[1]?.A}%</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary opacity-70">Resolution Rate</p>
+                                                <p className="text-2xl font-display font-black text-text-primary">{radarData[1]?.A}%</p>
                                             </div>
                                         </div>
                                         <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-6 rounded-[2rem] space-y-4">
@@ -218,8 +218,8 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                                 {radarData[2]?.A >= 80 ? <ArrowUpRight className="text-brand-green" size={16} /> : <ArrowDownRight className="text-brand-red" size={16} />}
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Compliance</p>
-                                                <p className="text-2xl font-display font-black text-white">{radarData[2]?.A}%</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary opacity-70">Compliance</p>
+                                                <p className="text-2xl font-display font-black text-text-primary">{radarData[2]?.A}%</p>
                                             </div>
                                         </div>
                                     </div>
@@ -228,7 +228,7 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                         {/* Personal Trend */}
                                         <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] space-y-6">
-                                            <h3 className="text-lg font-display font-bold">Performance Trend</h3>
+                                            <h3 className="text-lg font-display font-bold text-text-primary">Performance Trend</h3>
                                             <div className="h-64 w-full">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <LineChart data={agentDetails?.trend}>
@@ -236,7 +236,7 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                                         <XAxis dataKey="date" stroke="#3f3f46" fontSize={10} axisLine={false} tickLine={false} />
                                                         <YAxis domain={[0, 100]} hide />
                                                         <Tooltip
-                                                            contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '12px' }}
+                                                            contentStyle={{ backgroundColor: 'var(--color-brand-surface)', border: '1px solid var(--color-brand-border)', borderRadius: '12px', color: 'var(--color-text-primary)' }}
                                                         />
                                                         <Line type="monotone" dataKey="avg_score" stroke="#f27d26" strokeWidth={3} dot={{ r: 4, fill: '#f27d26' }} activeDot={{ r: 6 }} />
                                                     </LineChart>
@@ -246,12 +246,12 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
 
                                         {/* Radar Comparison */}
                                         <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] flex flex-col items-center">
-                                            <h3 className="text-lg font-display font-bold self-start mb-4">Competency Radar</h3>
+                                            <h3 className="text-lg font-display font-bold text-text-primary self-start mb-4">Competency Radar</h3>
                                             <div className="flex-1 w-full flex items-center justify-center min-h-[300px]">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                                                        <PolarGrid stroke="#27272a" />
-                                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#71717a', fontSize: 10, fontWeight: 700 }} />
+                                                        <PolarGrid stroke="var(--color-brand-border)" />
+                                                        <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--color-text-secondary)', fontSize: 10, fontWeight: 700 }} />
                                                         <Radar
                                                             name={selectedAgent?.agent_name}
                                                             dataKey="A"
@@ -268,8 +268,8 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                     {/* Recent Audits */}
                                     <div className="bg-brand-surface/20 border border-brand-border/50 rounded-[2.5rem] p-8 space-y-6">
                                         <div className="flex items-center gap-2">
-                                            <Clock className="text-zinc-500" size={20} />
-                                            <h3 className="text-lg font-display font-bold">Recent Audits</h3>
+                                            <Clock className="text-text-secondary" size={20} />
+                                            <h3 className="text-lg font-display font-bold text-text-primary">Recent Audits</h3>
                                         </div>
                                         <div className="space-y-3">
                                             {agentDetails?.recent_audits.map(audit => (
@@ -281,13 +281,13 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                                             )} size={18} />
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-bold text-zinc-200">Session #{audit.id + 1000}</p>
-                                                            <p className="text-[10px] text-zinc-500 font-black uppercase">{new Date(audit.created_at).toLocaleDateString()} • {audit.type}</p>
+                                                            <p className="text-sm font-bold text-text-primary">Session #{audit.id + 1000}</p>
+                                                            <p className="text-[10px] text-text-secondary opacity-70 font-black uppercase">{new Date(audit.created_at).toLocaleDateString()} • {audit.type}</p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right flex items-center gap-6">
                                                         <div>
-                                                            <p className="text-xs font-black text-zinc-500 uppercase">Score</p>
+                                                            <p className="text-xs font-black text-text-secondary opacity-60 uppercase">Score</p>
                                                             <p className={cn(
                                                                 "text-lg font-display font-black",
                                                                 audit.overall_score >= 80 ? "text-brand-green" : audit.overall_score >= 60 ? "text-brand-accent" : "text-brand-red"
@@ -304,12 +304,12 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                         </motion.div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
-                            <div className="w-24 h-24 bg-brand-surface/50 rounded-full border border-brand-border flex items-center justify-center text-zinc-700">
+                            <div className="w-24 h-24 bg-brand-surface/50 rounded-full border border-brand-border flex items-center justify-center text-text-secondary opacity-40">
                                 <Users size={48} />
                             </div>
                             <div className="space-y-2">
-                                <h2 className="text-2xl font-display font-black text-zinc-400">Agent Intelligence Base</h2>
-                                <p className="text-zinc-600 max-w-sm">Select an agent from the sidebar to view detailed performance metrics, skill trends, and coaching opportunities.</p>
+                                <h2 className="text-2xl font-display font-black text-text-primary opacity-60">Agent Intelligence Base</h2>
+                                <p className="text-text-secondary opacity-70 max-w-sm">Select an agent from the sidebar to view detailed performance metrics, skill trends, and coaching opportunities.</p>
                             </div>
                         </div>
                     )}

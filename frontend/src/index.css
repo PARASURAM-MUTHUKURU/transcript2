@@ -21,12 +21,18 @@
 }
 
 .light {
-  --color-brand-bg: #f8fafc;
+  --color-brand-bg: #f1f5f9;
   --color-brand-surface: #ffffff;
-  --color-brand-card: #f1f5f9;
-  --color-brand-border: #e2e8f0;
+  --color-brand-card: #f8fafc;
+  --color-brand-border: #cbd5e1;
   --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
+  --color-text-secondary: #334155;
+}
+
+@layer components {
+  .glass-container {
+    @apply bg-brand-surface/70 backdrop-blur-md border border-brand-border/50;
+  }
 }
 
 @layer base {

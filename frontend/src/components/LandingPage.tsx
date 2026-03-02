@@ -39,7 +39,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
             description: "RAG-powered suggestions for agents based on internal knowledge and best practices."
         },
         {
-            icon: <BarChart3 className="text-white" size={24} />,
+            icon: <BarChart3 className="text-brand-accent" size={24} />,
             title: "Supervisor Dashboards",
             description: "Granular agent-wise analytics to identify performance trends and training needs."
         }
@@ -69,7 +69,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-5xl md:text-7xl font-display font-black tracking-tight mb-8 leading-[1.1]"
+                        className="text-5xl md:text-7xl font-display font-black tracking-tight mb-8 leading-[1.1] text-text-primary"
                     >
                         GenAI-Powered <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-orange-400">
@@ -81,7 +81,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-12 leading-relaxed"
+                        className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-12 leading-relaxed"
                     >
                         Revolutionize your QA process with AI that reviews, scores, and improves
                         customer interactions in real time.
@@ -102,7 +102,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                         </button>
                         <a
                             href="#problem"
-                            className="px-8 py-4 bg-brand-surface border border-brand-border text-zinc-300 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-brand-card transition-all"
+                            className="px-8 py-4 bg-brand-surface border border-brand-border text-text-primary rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-brand-card transition-all"
                         >
                             Learn More
                         </a>
@@ -117,10 +117,10 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                         <div className="space-y-8">
                             <div className="space-y-4">
                                 <h2 className="text-xs font-black uppercase tracking-widest text-brand-accent">The Challenge</h2>
-                                <h3 className="text-3xl font-display font-bold leading-tight">
+                                <h3 className="text-3xl font-display font-bold leading-tight text-text-primary">
                                     Overcoming the QA Bottleneck
                                 </h3>
-                                <p className="text-zinc-400 text-lg leading-relaxed">
+                                <p className="text-text-secondary text-lg leading-relaxed">
                                     Traditional manual auditing is slow, inconsistent, and only covers a fraction
                                     of customer interactions. High volumes of chats and calls leave businesses
                                     vulnerable to compliance breaches and missed opportunities for training.
@@ -129,10 +129,10 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
 
                             <div className="space-y-4 pt-8 border-t border-brand-border/50">
                                 <h2 className="text-xs font-black uppercase tracking-widest text-brand-blue">Our Mission</h2>
-                                <h3 className="text-3xl font-display font-bold leading-tight">
+                                <h3 className="text-3xl font-display font-bold leading-tight text-text-primary">
                                     Intelligent Quality Assurance
                                 </h3>
-                                <p className="text-zinc-400 text-lg leading-relaxed">
+                                <p className="text-text-secondary text-lg leading-relaxed">
                                     This project builds a platform that evaluates tone, empathy, and
                                     resolution effectiveness. Designed for BPOs and SaaS companies, it
                                     reduces manual workload while ensuring 100% coverage and real-time compliance.
@@ -149,8 +149,8 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                                             <ShieldCheck size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Compliance</p>
-                                            <p className="text-sm font-bold text-zinc-200">Script Adherence Detected</p>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Compliance</p>
+                                            <p className="text-sm font-bold text-text-primary">Script Adherence Detected</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 p-4 bg-brand-bg rounded-2xl border border-brand-border/50">
@@ -158,8 +158,8 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                                             <Zap size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Sentiment</p>
-                                            <p className="text-sm font-bold text-zinc-200">High Empathy Score (94%)</p>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Sentiment</p>
+                                            <p className="text-sm font-bold text-text-primary">High Empathy Score (94%)</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 p-4 bg-brand-bg rounded-2xl border border-brand-border/50">
@@ -167,8 +167,8 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                                             <LayoutDashboard size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Analytics</p>
-                                            <p className="text-sm font-bold text-zinc-200">Real-time Trend Analysis</p>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Analytics</p>
+                                            <p className="text-sm font-bold text-text-primary">Real-time Trend Analysis</p>
                                         </div>
                                     </div>
                                 </div>
@@ -183,7 +183,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-16">
                         <h2 className="text-xs font-black uppercase tracking-widest text-brand-accent mb-4">Key Outcomes</h2>
-                        <h3 className="text-4xl font-display font-bold">Everything you need to scale QA</h3>
+                        <h3 className="text-4xl font-display font-bold text-text-primary">Everything you need to scale QA</h3>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -197,8 +197,8 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                                     {outcome.icon}
                                 </div>
                                 <div className="space-y-3">
-                                    <h4 className="text-xl font-display font-bold">{outcome.title}</h4>
-                                    <p className="text-zinc-500 text-sm leading-relaxed">
+                                    <h4 className="text-xl font-display font-bold text-text-primary">{outcome.title}</h4>
+                                    <p className="text-text-secondary text-sm leading-relaxed">
                                         {outcome.description}
                                     </p>
                                 </div>
@@ -228,7 +228,7 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                         </div>
                         <h1 className="font-display font-bold text-lg tracking-tight">AuditAI</h1>
                     </div>
-                    <p className="text-zinc-600 text-xs font-medium">
+                    <p className="text-text-secondary text-xs font-medium">
                         © 2026 GenAI Customer Support Quality Auditor. Built for Excellence.
                     </p>
                 </div>

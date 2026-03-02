@@ -52,7 +52,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const audioSrc = selectedAudit.audio_data 
+  const audioSrc = selectedAudit.audio_data
     ? `data:${selectedAudit.mime_type || 'audio/mpeg'};base64,${selectedAudit.audio_data}`
     : null;
 
@@ -61,7 +61,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
       {/* Audio Player Section */}
       <div className="p-8 border-b border-brand-border bg-brand-card/30">
         <div className="flex items-center justify-between mb-6">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Audio Recording</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Audio Recording</p>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-brand-accent" />
             <span className="text-[10px] font-bold text-brand-accent uppercase tracking-wider">Recorded Audit</span>
@@ -70,7 +70,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
 
         <div className="bg-brand-bg border border-brand-border rounded-2xl p-6 space-y-6">
           {audioSrc && (
-            <audio 
+            <audio
               ref={audioRef}
               src={audioSrc}
               onTimeUpdate={handleTimeUpdate}
@@ -78,15 +78,15 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
               onEnded={() => setIsPlaying(false)}
             />
           )}
-          
+
           <div className="flex items-center justify-center gap-6">
             <div className="flex flex-col items-center gap-1">
-              <button className="text-zinc-500 hover:text-white transition-colors">
+              <button className="text-text-secondary hover:text-text-primary transition-colors">
                 <Volume2 size={20} />
               </button>
-              <span className="text-[8px] font-black uppercase text-zinc-600">Volume</span>
+              <span className="text-[8px] font-black uppercase text-text-secondary opacity-60">Volume</span>
             </div>
-            <button 
+            <button
               onClick={togglePlay}
               disabled={!audioSrc}
               className={cn(
@@ -97,16 +97,16 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
               {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
             </button>
             <div className="flex flex-col items-center gap-1">
-              <button className="text-zinc-500 hover:text-white transition-colors">
+              <button className="text-text-secondary hover:text-text-primary transition-colors">
                 <Settings size={20} />
               </button>
-              <span className="text-[8px] font-black uppercase text-zinc-600">Speed</span>
+              <span className="text-[8px] font-black uppercase text-text-secondary opacity-60">Speed</span>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Waveform progress={currentTime / (duration || 1)} isPlaying={isPlaying} />
-            <div className="flex justify-between text-[10px] font-mono text-zinc-500 px-1">
+            <div className="flex justify-between text-[10px] font-mono text-text-secondary opacity-70 px-1">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
@@ -121,8 +121,8 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
       <div className="p-8 space-y-8">
         <div className="flex justify-between items-center">
           <div className="space-y-1">
-            <h3 className="text-lg font-display font-bold tracking-tight">Audit Intelligence</h3>
-            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Powered by Gemini 3.1 Pro</p>
+            <h3 className="text-lg font-display font-bold tracking-tight text-text-primary">Audit Intelligence</h3>
+            <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest">Powered by Gemini 3.1 Pro</p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center text-brand-accent font-black text-lg">
             {selectedAudit.overall_score}
@@ -131,7 +131,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
 
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Performance Metrics</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Performance Metrics</p>
             <TrendingUp size={14} className="text-brand-green" />
           </div>
           <div className="space-y-5">
@@ -144,7 +144,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
 
         <div className="space-y-4 pt-6 border-t border-brand-border">
           <div className="flex justify-between items-center">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Compliance Violations</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Compliance Violations</p>
             <span className={cn(
               "text-[10px] font-black px-2 py-0.5 rounded",
               selectedAudit.violations.length > 0 ? "bg-brand-red/10 text-brand-red" : "bg-brand-green/10 text-brand-green"
@@ -152,22 +152,22 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
               {selectedAudit.violations.length} Detected
             </span>
           </div>
-          
+
           <div className="space-y-3">
             {selectedAudit.violations.length > 0 ? (
               selectedAudit.violations.map((v, i) => (
                 <div key={i} className="bg-brand-card border border-brand-border p-4 rounded-xl group hover:border-brand-accent/30 transition-all cursor-pointer">
                   <div className="flex justify-between items-start mb-1">
-                    <p className="text-xs font-bold text-zinc-200">{v.type}</p>
+                    <p className="text-xs font-bold text-text-primary">{v.type}</p>
                     <span className={cn(
-                      "text-[8px] font-black uppercase px-1.5 py-0.5 rounded", 
+                      "text-[8px] font-black uppercase px-1.5 py-0.5 rounded",
                       v.severity === 'Critical' ? "bg-brand-red/10 text-brand-red" : "bg-brand-accent/10 text-brand-accent"
                     )}>
                       {v.severity}
                     </span>
                   </div>
-                  <p className="text-[10px] text-zinc-500 leading-relaxed">{v.description}</p>
-                  <p className="text-[8px] text-zinc-600 mt-2 font-mono uppercase tracking-tighter">Line {v.transcript_line_index + 1}</p>
+                  <p className="text-[10px] text-text-secondary leading-relaxed">{v.description}</p>
+                  <p className="text-[8px] text-text-secondary opacity-60 mt-2 font-mono uppercase tracking-tighter">Line {v.transcript_line_index + 1}</p>
                 </div>
               ))
             ) : (
@@ -179,15 +179,15 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
         </div>
 
         <div className="space-y-4 pt-6 border-t border-brand-border">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Call Metadata</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Call Metadata</p>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-brand-bg/50 p-3 rounded-xl border border-brand-border/50">
-              <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">Agent ID</p>
-              <p className="text-xs font-bold text-zinc-300">#{selectedAudit.agent_id + 400}</p>
+              <p className="text-[8px] font-black uppercase text-text-secondary opacity-60 mb-1">Agent ID</p>
+              <p className="text-xs font-bold text-text-primary">#{selectedAudit.agent_id + 400}</p>
             </div>
             <div className="bg-brand-bg/50 p-3 rounded-xl border border-brand-border/50">
-              <p className="text-[8px] font-black uppercase text-zinc-600 mb-1">Duration</p>
-              <p className="text-xs font-bold text-zinc-300">{formatTime(duration)}</p>
+              <p className="text-[8px] font-black uppercase text-text-secondary opacity-60 mb-1">Duration</p>
+              <p className="text-xs font-bold text-text-primary">{formatTime(duration)}</p>
             </div>
           </div>
         </div>

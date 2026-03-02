@@ -15,14 +15,14 @@ export const Waveform = ({ progress, isPlaying }: WaveformProps) => {
   return (
     <div className="flex items-center gap-1 h-8 px-1 flex-1">
       {bars.map((bar, i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className={cn(
-            "w-1 rounded-full transition-all duration-300", 
-            bar.active ? "bg-brand-accent shadow-[0_0_8px_rgba(242,125,38,0.5)]" : "bg-zinc-800",
+            "w-1 rounded-full transition-all duration-300",
+            bar.active ? "bg-brand-accent shadow-[0_0_8px_rgba(242,125,38,0.5)]" : "bg-brand-border",
             isPlaying && bar.active && "animate-pulse"
-          )} 
-          style={{ height: `${bar.height}px` }} 
+          )}
+          style={{ height: `${bar.height}px` }}
         />
       ))}
     </div>

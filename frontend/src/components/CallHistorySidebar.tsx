@@ -31,19 +31,19 @@ export const CallHistorySidebar = ({
       {/* Toggle Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-brand-surface border border-brand-border rounded-full flex items-center justify-center text-zinc-400 hover:text-white z-10 shadow-lg"
+        className="absolute -right-3 top-20 w-6 h-6 bg-brand-surface border border-brand-border rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary z-10 shadow-lg transition-colors"
       >
         {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
 
       <div className={cn("p-6 space-y-6 overflow-hidden", collapsed && "opacity-0 pointer-events-none")}>
         <div className="space-y-1">
-          <h2 className="text-xl font-display font-bold tracking-tight text-zinc-100">Call Audits</h2>
-          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Audio Recording History</p>
+          <h2 className="text-xl font-display font-bold tracking-tight text-text-primary">Call Audits</h2>
+          <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest">Audio Recording History</p>
         </div>
 
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={14} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary opacity-60" size={14} />
           <input
             type="text"
             placeholder="Search recordings..."
@@ -57,7 +57,7 @@ export const CallHistorySidebar = ({
               key={tab}
               className={cn(
                 "flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all",
-                tab === 'All' ? "bg-brand-accent text-white" : "text-zinc-500 hover:text-zinc-300"
+                tab === 'All' ? "bg-brand-accent text-white" : "text-text-secondary hover:text-text-primary"
               )}
             >
               {tab}
@@ -89,13 +89,13 @@ export const CallHistorySidebar = ({
                 <div className="flex items-center gap-2">
                   <div className={cn(
                     "p-1.5 rounded-lg",
-                    audit.type === 'chat' ? "bg-zinc-800 text-zinc-400" : "bg-brand-red/10 text-brand-red"
+                    audit.type === 'chat' ? "bg-brand-border text-text-secondary opacity-70" : "bg-brand-red/10 text-brand-red"
                   )}>
                     {audit.type === 'chat' ? <MessageSquare size={12} /> : <Phone size={12} />}
                   </div>
                   <div>
-                    <span className="font-bold text-xs block text-zinc-200">#{audit.id + 4800}</span>
-                    <span className="text-[10px] text-zinc-500 font-medium">6m 14s</span>
+                    <span className="font-bold text-xs block text-text-primary">#{audit.id + 4800}</span>
+                    <span className="text-[10px] text-text-secondary font-medium">6m 14s</span>
                   </div>
                 </div>
                 <div className={cn(
@@ -105,7 +105,7 @@ export const CallHistorySidebar = ({
                   {audit.overall_score}%
                 </div>
               </div>
-              <p className="text-xs text-zinc-400 font-semibold truncate mb-2">{audit.agent_name}</p>
+              <p className="text-xs text-text-secondary font-semibold truncate mb-2">{audit.agent_name}</p>
               {audit.violations && audit.violations.length > 0 && (
                 <div className="flex items-center gap-1.5 text-brand-red text-[9px] font-black uppercase tracking-widest">
                   <AlertCircle size={10} />
@@ -126,7 +126,7 @@ export const CallHistorySidebar = ({
               onClick={() => setSelectedAudit(audit)}
               className={cn(
                 "p-3 rounded-xl transition-all",
-                selectedAudit?.id === audit.id ? "bg-brand-accent text-white" : "text-zinc-500 hover:bg-brand-card"
+                selectedAudit?.id === audit.id ? "bg-brand-accent text-white" : "text-text-secondary hover:bg-brand-card"
               )}
             >
               {audit.type === 'chat' ? <MessageSquare size={16} /> : <Phone size={16} />}
