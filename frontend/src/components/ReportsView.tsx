@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import { Analytics, Audit } from '../types';
 import { cn } from '../lib/utils';
+import { Skeleton } from './Skeleton';
 
 interface ReportsViewProps {
   analytics: Analytics | null;
@@ -28,8 +29,32 @@ interface ReportsViewProps {
 
 export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
   if (!analytics) return (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-accent"></div>
+    <div className="flex-1 overflow-y-auto bg-brand-bg p-4 md:p-8 space-y-8">
+      <div className="max-w-7xl mx-auto space-y-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="w-32 h-10 rounded-2xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Skeleton className="h-40 rounded-[2rem]" />
+          <Skeleton className="h-40 rounded-[2rem]" />
+          <Skeleton className="h-40 rounded-[2rem]" />
+          <Skeleton className="h-40 rounded-[2rem]" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <Skeleton className="lg:col-span-1 h-[600px] rounded-[2.5rem]" />
+          <div className="lg:col-span-2 space-y-8">
+            <Skeleton className="h-[400px] rounded-[2.5rem]" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <Skeleton className="h-64 rounded-[2.5rem]" />
+              <Skeleton className="h-64 rounded-[2.5rem]" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 

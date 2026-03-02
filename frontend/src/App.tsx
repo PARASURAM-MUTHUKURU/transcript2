@@ -26,8 +26,24 @@ import { ReportsView } from './components/ReportsView';
 import { RAGSearch } from './components/RAGSearch';
 import { AgentsDashboard } from './components/AgentsDashboard';
 import { LandingPage } from './components/LandingPage';
+import { ThemeProvider, ThemeToggle } from './components/ThemeToggle';
+import { ToastProvider, useToast } from './components/Toasts';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
+  return (
+    <ErrorBoundary>
+      <ThemeProvider>
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+}
+
+function AppContent() {
+  const { showToast } = useToast();
   const [view, setView] = useState<'landing' | 'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge'>('landing');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -108,8 +124,10 @@ export default function App() {
       await fetchData();
       setShowNewAuditModal(false);
       setNewAuditData({ agentId: '', transcript: '', type: 'call', audioData: '', mimeType: '' });
+      showToast('Audit completed successfully!', 'success');
     } catch (error) {
       console.error("Audit failed:", error);
+      showToast('Audit failed. Please try again.', 'error');
     } finally {
       setIsAuditing(false);
     }
@@ -137,8 +155,10 @@ export default function App() {
         audioData: base64Data,
         mimeType: file.type
       }));
+      showToast('Transcription completed!', 'success');
     } catch (error) {
       console.error('Transcription error:', error);
+      showToast('Transcription failed.', 'error');
     } finally {
       setIsTranscribing(false);
     }
@@ -175,6 +195,7 @@ export default function App() {
               3
             </span>
           </button>
+          <ThemeToggle />
           <div className="w-8 h-8 rounded-lg bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-bold text-xs">
             SQ
           </div>
@@ -194,6 +215,7 @@ export default function App() {
               setShowNewAuditModal={setShowNewAuditModal}
               collapsed={sidebarCollapsed}
               setCollapsed={setSidebarCollapsed}
+              loading={loading}
             />
 
             {/* Right Side: Information (Audit Details + Transcript) */}

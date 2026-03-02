@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, MessageSquare, Phone, AlertCircle, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Audit } from '../types';
+import { AuditSkeleton } from './Skeleton';
 
 interface CallHistorySidebarProps {
   audits: Audit[];
@@ -10,15 +11,17 @@ interface CallHistorySidebarProps {
   setShowNewAuditModal: (show: boolean) => void;
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
+  loading?: boolean;
 }
 
-export const CallHistorySidebar = ({ 
-  audits, 
-  selectedAudit, 
-  setSelectedAudit, 
+export const CallHistorySidebar = ({
+  audits,
+  selectedAudit,
+  setSelectedAudit,
   setShowNewAuditModal,
   collapsed,
-  setCollapsed
+  setCollapsed,
+  loading = false
 }: CallHistorySidebarProps) => {
   return (
     <aside className={cn(
@@ -26,7 +29,7 @@ export const CallHistorySidebar = ({
       collapsed ? "w-16" : "w-80"
     )}>
       {/* Toggle Button */}
-      <button 
+      <button
         onClick={() => setCollapsed(!collapsed)}
         className="absolute -right-3 top-20 w-6 h-6 bg-brand-surface border border-brand-border rounded-full flex items-center justify-center text-zinc-400 hover:text-white z-10 shadow-lg"
       >
@@ -41,16 +44,16 @@ export const CallHistorySidebar = ({
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={14} />
-          <input 
-            type="text" 
-            placeholder="Search recordings..." 
+          <input
+            type="text"
+            placeholder="Search recordings..."
             className="w-full bg-brand-bg border border-brand-border rounded-xl py-2 pl-9 pr-4 text-xs focus:ring-1 focus:ring-brand-accent outline-none transition-all"
           />
         </div>
 
         <div className="flex p-1 bg-brand-bg rounded-xl border border-brand-border">
           {['All', 'Flagged', 'Critical'].map(tab => (
-            <button 
+            <button
               key={tab}
               className={cn(
                 "flex-1 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all",
@@ -64,46 +67,54 @@ export const CallHistorySidebar = ({
       </div>
 
       <div className={cn("flex-1 overflow-y-auto px-3 space-y-1 pb-6", collapsed && "hidden")}>
-        {audits.map(audit => (
-          <button
-            key={audit.id}
-            onClick={() => setSelectedAudit(audit)}
-            className={cn(
-              "w-full text-left p-4 rounded-2xl transition-all group relative border",
-              selectedAudit?.id === audit.id 
-                ? "bg-brand-card border-brand-border shadow-lg" 
-                : "hover:bg-brand-card/50 border-transparent"
-            )}
-          >
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex items-center gap-2">
+        {loading ? (
+          <>
+            <AuditSkeleton />
+            <AuditSkeleton />
+            <AuditSkeleton />
+          </>
+        ) : (
+          audits.map(audit => (
+            <button
+              key={audit.id}
+              onClick={() => setSelectedAudit(audit)}
+              className={cn(
+                "w-full text-left p-4 rounded-2xl transition-all group relative border",
+                selectedAudit?.id === audit.id
+                  ? "bg-brand-card border-brand-border shadow-lg"
+                  : "hover:bg-brand-card/50 border-transparent"
+              )}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "p-1.5 rounded-lg",
+                    audit.type === 'chat' ? "bg-zinc-800 text-zinc-400" : "bg-brand-red/10 text-brand-red"
+                  )}>
+                    {audit.type === 'chat' ? <MessageSquare size={12} /> : <Phone size={12} />}
+                  </div>
+                  <div>
+                    <span className="font-bold text-xs block text-zinc-200">#{audit.id + 4800}</span>
+                    <span className="text-[10px] text-zinc-500 font-medium">6m 14s</span>
+                  </div>
+                </div>
                 <div className={cn(
-                  "p-1.5 rounded-lg",
-                  audit.type === 'chat' ? "bg-zinc-800 text-zinc-400" : "bg-brand-red/10 text-brand-red"
+                  "px-2 py-0.5 rounded text-[10px] font-black",
+                  audit.overall_score > 80 ? "bg-brand-green/10 text-brand-green" : audit.overall_score > 60 ? "bg-brand-accent/10 text-brand-accent" : "bg-brand-red/10 text-brand-red"
                 )}>
-                  {audit.type === 'chat' ? <MessageSquare size={12} /> : <Phone size={12} />}
-                </div>
-                <div>
-                  <span className="font-bold text-xs block text-zinc-200">#{audit.id + 4800}</span>
-                  <span className="text-[10px] text-zinc-500 font-medium">6m 14s</span>
+                  {audit.overall_score}%
                 </div>
               </div>
-              <div className={cn(
-                "px-2 py-0.5 rounded text-[10px] font-black",
-                audit.overall_score > 80 ? "bg-brand-green/10 text-brand-green" : audit.overall_score > 60 ? "bg-brand-accent/10 text-brand-accent" : "bg-brand-red/10 text-brand-red"
-              )}>
-                {audit.overall_score}%
-              </div>
-            </div>
-            <p className="text-xs text-zinc-400 font-semibold truncate mb-2">{audit.agent_name}</p>
-            {audit.violations && audit.violations.length > 0 && (
-              <div className="flex items-center gap-1.5 text-brand-red text-[9px] font-black uppercase tracking-widest">
-                <AlertCircle size={10} />
-                {audit.violations.length} Violations
-              </div>
-            )}
-          </button>
-        ))}
+              <p className="text-xs text-zinc-400 font-semibold truncate mb-2">{audit.agent_name}</p>
+              {audit.violations && audit.violations.length > 0 && (
+                <div className="flex items-center gap-1.5 text-brand-red text-[9px] font-black uppercase tracking-widest">
+                  <AlertCircle size={10} />
+                  {audit.violations.length} Violations
+                </div>
+              )}
+            </button>
+          ))
+        )}
       </div>
 
       {/* Collapsed View Icons */}
@@ -125,7 +136,7 @@ export const CallHistorySidebar = ({
       )}
 
       <div className={cn("p-4 border-t border-brand-border", collapsed && "p-2")}>
-        <button 
+        <button
           onClick={() => setShowNewAuditModal(true)}
           className={cn(
             "w-full bg-brand-accent text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-brand-accent/90 transition-all flex items-center justify-center gap-2",
