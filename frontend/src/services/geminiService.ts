@@ -1,12 +1,10 @@
-import { GoogleGenAI, Type } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export interface Violation {
   type: string;
   description: string;
   severity: 'Critical' | 'Warning' | 'Info';
-  transcript_line_index: number; // 0-based index of the line in the transcript
+  transcript_line_index: number;
 }
 
 export interface AuditResult {
@@ -19,96 +17,41 @@ export interface AuditResult {
 }
 
 export async function auditTranscript(transcript: string, type: 'chat' | 'call'): Promise<AuditResult> {
-  const model = "gemini-2.5-flash-lite";
-
-  const prompt = `
-    Analyze the following customer support ${type} transcript and provide a quality audit.
-    
-    Metrics to score (0-100):
-    1. Empathy: How well did the agent understand and validate the customer's feelings?
-    2. Resolution: Did the agent solve the problem or provide a clear path forward?
-    3. Compliance: Did the agent follow standard protocols (greeting, privacy check, closing)?
-    
-    Identify specific compliance violations. For each violation, specify:
-    - type: A short name for the violation
-    - description: A detailed explanation
-    - severity: 'Critical', 'Warning', or 'Info'
-    - transcript_line_index: The 0-based index of the line in the transcript where this violation occurred or is most relevant.
-    
-    Transcript:
-    """
-    ${transcript}
-    """
-  `;
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          empathy_score: { type: Type.INTEGER },
-          resolution_score: { type: Type.INTEGER },
-          compliance_score: { type: Type.INTEGER },
-          overall_score: { type: Type.INTEGER },
-          violations: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                type: { type: Type.STRING },
-                description: { type: Type.STRING },
-                severity: { type: Type.STRING, enum: ['Critical', 'Warning', 'Info'] },
-                transcript_line_index: { type: Type.INTEGER }
-              },
-              required: ["type", "description", "severity", "transcript_line_index"]
-            }
-          },
-          suggestions: { type: Type.STRING }
-        },
-        required: ["empathy_score", "resolution_score", "compliance_score", "overall_score", "violations", "suggestions"]
-      }
-    }
+  const response = await fetch(`${API_URL}/api/ai/audit`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ transcript, type }),
   });
 
-  try {
-    return JSON.parse(response.text || "{}");
-  } catch (e) {
-    console.error("Failed to parse Gemini response", e);
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Gemini Audit Error:", error);
     throw new Error("Failed to audit transcript");
   }
+
+  return response.json();
 }
 
 export async function transcribeAudio(base64Data: string, mimeType: string): Promise<string> {
-  const model = "gemini-2.5-flash-lite";
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: [
-      {
-        inlineData: {
-          mimeType: mimeType,
-          data: base64Data
-        }
-      },
-      {
-        text: `Transcribe this customer support call audio accurately. 
-      CRITICAL INSTRUCTION: You must differentiate between the two speakers. 
-      Format the output so each line starts with EXACTLY either "Agent: " or "Customer: ". 
-      
-      To identify the agent, look for heuristic patterns such as:
-      - "Thank you for calling"
-      - "How can I help you today"
-      - "I'll be happy to assist"
-      - "Let me check"
-      - "I am transferring"
-      - "Please hold"
-      
-      Provide only the transcript text.` }
-    ]
+  const response = await fetch(`${API_URL}/api/ai/transcribe`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      base64_data: base64Data,
+      mime_type: mimeType
+    }),
   });
 
-  return response.text || "";
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Gemini Transcribe Error:", error);
+    throw new Error("Failed to transcribe audio");
+  }
+
+  const data = await response.json();
+  return data.transcript || "";
 }

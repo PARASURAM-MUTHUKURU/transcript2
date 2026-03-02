@@ -4,3 +4,5 @@ python-dotenv
 pydub
 SpeechRecognition
 python-multipart
+psycopg2-binary
+google-generativeai
