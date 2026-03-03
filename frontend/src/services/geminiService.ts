@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
 
 export interface Violation {
   type: string;
@@ -95,18 +95,27 @@ export async function transcribeAudio(base64Data: string, mimeType: string): Pro
       },
       {
         text: `Transcribe this customer support call audio accurately. 
-      CRITICAL INSTRUCTION: You must differentiate between the two speakers. 
-      Format the output so each line starts with EXACTLY either "Agent: " or "Customer: ". 
       
-      To identify the agent, look for heuristic patterns such as:
-      - "Thank you for calling"
-      - "How can I help you today"
-      - "I'll be happy to assist"
-      - "Let me check"
-      - "I am transferring"
-      - "Please hold"
+      TASK: Perform ADVANCED SPEAKER DIARIZATION. 
+      Analyze the acoustic subpopulations and vocal signatures to distinguish speakers.
       
-      Provide only the transcript text.` }
+      FORMAT: Each line MUST follow this EXACT format:
+      [MM:SS] Speaker Name (Confidence%): Message
+      
+      EXAMPLES:
+      [00:05] Agent (98%): Thank you for calling tech support.
+      [00:12] Customer (85%): My internet is down again.
+      
+      HEURISTICS for identification:
+      - "Agent": Look for standard greetings, professional tone, and process-oriented speech.
+      - "Customer": Look for the person stating the problem or providing details.
+      - If names are explicitly mentioned, use them.
+      
+      CRITICAL:
+      1. Ensure timestamps are accurate.
+      2. Provide a confidence percentage for each attribution based on the clarity of the vocal signature.
+      
+      Provide ONLY the transcript text in the specified format.` }
     ]
   });
 

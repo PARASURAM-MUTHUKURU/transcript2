@@ -11,32 +11,32 @@ interface TranscriptViewProps {
 export const TranscriptView = ({ selectedAudit, onUploadClick }: TranscriptViewProps) => {
   const parseTranscript = (text: string) => {
     if (!text) return [];
-    
-    // Simple parsing logic for "Speaker: Message" format
+
+    // Robust regex to handle variations in spacing and brackets
     const lines = text.split('\n').filter(line => line.trim());
     return lines.map((line, index) => {
-      const match = line.match(/^(Agent|Customer|Sarah|User):\s*(.*)$/i);
-      const speakerType = match 
-        ? (match[1].toLowerCase().includes('agent') || match[1].toLowerCase().includes('sarah') ? 'agent' : 'customer')
+      const match = line.match(/^\[?(\d{1,2}\s*:\s*\d{2})\]?\s*([^(:]+)\s*(?:\(\s*(\d+)\s*\%?\s*\))?:?\s*(.*)$/i);
+      const fallbackMatch = !match ? line.match(/^([^:]+):\s*(.*)$/i) : null;
+
+      const timestamp = match ? match[1].replace(/\s/g, '') : `00:${(index * 12).toString().padStart(2, '0')}`;
+      const name = match ? match[2].trim() : (fallbackMatch ? fallbackMatch[1].trim() : 'Speaker');
+      const confidence = match ? match[3] : null;
+      const message = match ? match[4].trim() : (fallbackMatch ? fallbackMatch[2].trim() : line);
+
+      const cleanMessage = message.startsWith(`${timestamp}]`) ? message.replace(`${timestamp}]`, '').trim() : message;
+
+      const speakerType = name.toLowerCase().includes('agent') || name.toLowerCase().includes('sarah') || name.toLowerCase().includes('audit')
+        ? 'agent'
         : 'customer';
-      
-      // Find violations for this line index
+
       const lineViolations = selectedAudit.violations?.filter(v => v.transcript_line_index === index) || [];
 
-      if (match) {
-        return {
-          speaker: speakerType,
-          name: match[1],
-          message: match[2],
-          timestamp: `00:${(index * 12).toString().padStart(2, '0')}`, // Mock timestamps for now
-          violations: lineViolations
-        };
-      }
       return {
-        speaker: 'customer',
-        name: 'System',
-        message: line,
-        timestamp: '--:--',
+        speaker: speakerType,
+        name: name,
+        message: cleanMessage,
+        timestamp: timestamp,
+        confidence: confidence,
         violations: lineViolations
       };
     });
@@ -53,8 +53,8 @@ export const TranscriptView = ({ selectedAudit, onUploadClick }: TranscriptViewP
             <div className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
             <h3 className="font-display font-bold text-lg">Call Transcript</h3>
           </div>
-          
-          <button 
+
+          <button
             onClick={onUploadClick}
             className="flex items-center gap-2 px-3 py-1.5 bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent rounded-lg border border-brand-accent/20 transition-all text-[10px] font-black uppercase tracking-widest"
           >
@@ -73,24 +73,41 @@ export const TranscriptView = ({ selectedAudit, onUploadClick }: TranscriptViewP
           {transcriptData.length > 0 ? (
             transcriptData.map((item, i) => (
               <div key={i} className={item.speaker === 'agent' ? "transcript-bubble-agent" : "transcript-bubble-customer"}>
-                <div className="flex justify-between items-center mb-2">
-                  <p className={cn(
-                    "text-[10px] font-black uppercase tracking-widest",
-                    item.speaker === 'agent' ? "text-brand-accent" : "text-zinc-500"
-                  )}>
-                    {item.name}
-                  </p>
-                  <span className="text-[9px] font-mono text-zinc-600">{item.timestamp}</span>
+                <div className="flex justify-between items-baseline mb-3">
+                  <div className="flex items-center gap-3">
+                    <p className={cn(
+                      "text-[10px] font-black uppercase tracking-[0.15em]",
+                      item.speaker === 'agent' ? "text-brand-accent/90" : "text-zinc-500"
+                    )}>
+                      {item.name}
+                    </p>
+                    {item.confidence && (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-800/50 border border-white/5">
+                        <div className={cn(
+                          "w-1 h-1 rounded-full",
+                          parseInt(item.confidence) > 90 ? "bg-brand-green" : "bg-brand-accent"
+                        )} />
+                        <span className="text-[8px] font-bold text-zinc-400">
+                          {item.confidence}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[9px] font-mono font-medium text-zinc-600 tracking-tighter tabular-nums">
+                    {item.timestamp}
+                  </span>
                 </div>
-                <p className="text-sm leading-relaxed text-zinc-300">{item.message}</p>
-                
+                <p className="text-[13px] leading-relaxed text-zinc-300 font-medium">
+                  {item.message}
+                </p>
+
                 {item.violations.length > 0 && (
                   <div className="mt-3 space-y-2">
                     {item.violations.map((v, vi) => (
                       <div key={vi} className={cn(
                         "flex items-start gap-2 p-2 rounded-lg border text-[10px] font-medium",
-                        v.severity === 'Critical' 
-                          ? "bg-brand-red/10 border-brand-red/20 text-brand-red" 
+                        v.severity === 'Critical'
+                          ? "bg-brand-red/10 border-brand-red/20 text-brand-red"
                           : "bg-brand-accent/10 border-brand-accent/20 text-brand-accent"
                       )}>
                         <Flag size={12} className="mt-0.5 shrink-0" />

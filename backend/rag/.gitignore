@@ -13,3 +13,13 @@ brain/
 implementation_plan.md
 task.md
 walkthrough.md
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+qa_data/
+qa_data.json
