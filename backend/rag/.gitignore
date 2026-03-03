@@ -1,0 +1,16 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+.venv/
+data/
+qa_data/
+qa_data.json
+qdrant_storage/
+__pycache__/
+qdrant_db/

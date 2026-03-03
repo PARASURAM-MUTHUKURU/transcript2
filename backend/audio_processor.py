@@ -4,31 +4,70 @@ from pydub import AudioSegment
 import speech_recognition as sr
 from pathlib import Path
 
-AGENT_KEYWORDS = [
-    "thank you for calling",
-    "how can i help",
-    "how can i help you today",
-    "how may i assist",
-    "i'll be happy to assist",
-    "happy to assist",
-    "calling",
-    "this is",
-    "my name is",
-    "support",
-    "customer service",
-    "let me check",
-    "i am transferring",
-    "transferring",
-    "please hold"
-]
+import json
+
+# Load keywords from JSON
+KEYWORDS_PATH = Path(__file__).parent / "keywords.json"
+with open(KEYWORDS_PATH, "r") as f:
+    KEYWORDS_DATA = json.load(f)
+
+AGENT_KEYWORDS = KEYWORDS_DATA.get("agent", [])
+CUSTOMER_KEYWORDS = KEYWORDS_DATA.get("customer", [])
+
+class SpeakerMixtureModel:
+    """
+    A conceptual implementation of a Mixture Model for speaker role classification.
+    Instead of hard rules, it uses a weighted mixture of features.
+    """
+    def __init__(self):
+        self.weights = {
+            "keywords": 0.6,
+            "fluency": 0.2,
+            "sentiment": 0.2
+        }
+
+    def calculate_role_probability(self, transcript: str) -> dict:
+        t = transcript.lower()
+        
+        # 1. Keyword Component
+        agent_matches = sum(1 for k in AGENT_KEYWORDS if k in t)
+        customer_matches = sum(1 for k in CUSTOMER_KEYWORDS if k in t)
+        
+        # Relative scoring for keywords
+        total_matches = agent_matches + customer_matches
+        if total_matches > 0:
+            p_agent_keywords = agent_matches / total_matches
+        else:
+            p_agent_keywords = 0.5 # Neutral if no matches
+        
+        # 2. Fluency Component
+        words = t.split()
+        p_agent_fluency = 0.7 if len(words) > 5 else 0.4
+        
+        # 3. Sentiment/Professionalism Component (Placeholder logic)
+        professional_terms = ["please", "assist", "check", "thank you"]
+        sentiment_score = sum(1 for p in professional_terms if p in t)
+        p_agent_sentiment = min(sentiment_score / 2.0, 1.0)
+        
+        # Weighted Mixture
+        p_agent = (
+            self.weights["keywords"] * p_agent_keywords +
+            self.weights["fluency"] * p_agent_fluency +
+            self.weights["sentiment"] * p_agent_sentiment
+        )
+        
+        return {
+            "agent": p_agent,
+            "customer": 1.0 - p_agent
+        }
 
 def classify_role(transcript: str) -> str:
     """
-    Classify the role based on keywords present in the transcript.
+    Classify the role using the SpeakerMixtureModel.
     """
-    t = transcript.lower()
-    score = sum(1 for k in AGENT_KEYWORDS if k in t)
-    return "agent" if score > 0 else "customer"
+    model = SpeakerMixtureModel()
+    probs = model.calculate_role_probability(transcript)
+    return "agent" if probs["agent"] > probs["customer"] else "customer"
 
 def transcribe_audio_segment(audio_segment: AudioSegment, recognizer: sr.Recognizer) -> str:
     """
