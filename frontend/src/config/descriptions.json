@@ -1,0 +1,11 @@
+{
+    "performance": {
+        "action_required": "Action Required: This area is significantly below the 80% benchmark. Recommend targeted coaching sessions.",
+        "maintaining_standards": "Maintaining Standards: Performance is within acceptable range but has room for optimization."
+    },
+    "metrics": {
+        "empathy": "How well did the agent understand and validate the customer's feelings?",
+        "resolution": "Did the agent solve the problem or provide a clear path forward?",
+        "compliance": "Did the agent follow standard protocols (greeting, privacy check, closing)?"
+    }
+}

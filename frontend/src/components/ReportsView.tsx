@@ -1,13 +1,13 @@
 import React from 'react';
 import { Users, TrendingDown, Target, Award, AlertTriangle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   LineChart,
   Line,
@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { Analytics, Audit } from '../types';
 import { cn } from '../lib/utils';
+import descriptions from '../config/descriptions.json';
 
 interface ReportsViewProps {
   analytics: Analytics | null;
@@ -30,7 +31,7 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
 
   const totalAgents = analytics.stats.length;
   const avgScore = analytics.stats.reduce((acc, curr) => acc + curr.avg_score, 0) / (totalAgents || 1);
-  
+
   // Identify lagging areas across all audits
   const laggingMetrics = audits.reduce((acc, audit) => {
     acc.empathy += audit.empathy_score;
@@ -53,7 +54,7 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-brand-surface border border-brand-border p-6 rounded-3xl space-y-2"
@@ -65,7 +66,7 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
             <p className="text-3xl font-display font-bold">{totalAgents}</p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -78,7 +79,7 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
             <p className="text-3xl font-display font-bold text-brand-green">{Math.round(avgScore)}%</p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -91,7 +92,7 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
             <p className="text-xl font-display font-bold text-brand-red truncate">{lowestMetric.name}</p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -117,24 +118,24 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={analytics.stats}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                  <XAxis 
-                    dataKey="agent_name" 
-                    stroke="#71717a" 
-                    fontSize={10} 
-                    tickLine={false} 
+                  <XAxis
+                    dataKey="agent_name"
+                    stroke="#71717a"
+                    fontSize={10}
+                    tickLine={false}
                     axisLine={false}
                   />
-                  <YAxis 
-                    stroke="#71717a" 
-                    fontSize={10} 
-                    tickLine={false} 
+                  <YAxis
+                    stroke="#71717a"
+                    fontSize={10}
+                    tickLine={false}
                     axisLine={false}
                     domain={[0, 100]}
                   />
-                  <Tooltip 
+                  <Tooltip
                     cursor={{ fill: '#18181b' }}
-                    contentStyle={{ 
-                      backgroundColor: '#09090b', 
+                    contentStyle={{
+                      backgroundColor: '#09090b',
                       border: '1px solid #27272a',
                       borderRadius: '12px',
                       fontSize: '12px'
@@ -160,33 +161,33 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={analytics.trend}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="#71717a" 
-                    fontSize={10} 
-                    tickLine={false} 
+                  <XAxis
+                    dataKey="date"
+                    stroke="#71717a"
+                    fontSize={10}
+                    tickLine={false}
                     axisLine={false}
                   />
-                  <YAxis 
-                    stroke="#71717a" 
-                    fontSize={10} 
-                    tickLine={false} 
+                  <YAxis
+                    stroke="#71717a"
+                    fontSize={10}
+                    tickLine={false}
                     axisLine={false}
                     domain={[0, 100]}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#09090b', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#09090b',
                       border: '1px solid #27272a',
                       borderRadius: '12px',
                       fontSize: '12px'
                     }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="avg_score" 
-                    stroke="#f27d26" 
-                    strokeWidth={3} 
+                  <Line
+                    type="monotone"
+                    dataKey="avg_score"
+                    stroke="#f27d26"
+                    strokeWidth={3}
                     dot={{ fill: '#f27d26', strokeWidth: 2, r: 4 }}
                     activeDot={{ r: 6, strokeWidth: 0 }}
                   />
@@ -216,7 +217,7 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
                   </p>
                 </div>
                 <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div 
+                  <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${metric.score}%` }}
                     className={cn(
@@ -226,9 +227,9 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
                   />
                 </div>
                 <p className="text-[10px] text-zinc-500 leading-relaxed">
-                  {metric.score < 70 
-                    ? `Action Required: This area is significantly below the 80% benchmark. Recommend targeted coaching sessions.` 
-                    : `Maintaining Standards: Performance is within acceptable range but has room for optimization.`}
+                  {metric.score < 70
+                    ? descriptions.performance.action_required
+                    : descriptions.performance.maintaining_standards}
                 </p>
               </div>
             ))}

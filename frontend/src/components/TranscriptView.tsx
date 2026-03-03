@@ -12,32 +12,33 @@ export const TranscriptView = ({ selectedAudit, onUploadClick }: TranscriptViewP
   const parseTranscript = (text: string) => {
     if (!text) return [];
 
-    // Updated parsing for "[MM:SS] Speaker Name (Confidence%): Message" format
+    // Improved regex to handle optional brackets and variations in spacing
+    // Matches: [00:00] Name (98%): Message OR [00:00] Name: Message OR 00:00 Name: Message
     const lines = text.split('\n').filter(line => line.trim());
     return lines.map((line, index) => {
-      // Match [MM:SS] Name (Conf%): Message
-      const match = line.match(/^\[(\d{1,2}:\d{2})\]\s*([^(:]+)\s*(?:\((\d+)\%?\))?:\s*(.*)$/i);
+      const match = line.match(/^\[?(\d{1,2}\s*:\s*\d{2})\]?\s*([^(:]+)\s*(?:\(\s*(\d+)\s*\%?\s*\))?:\s*(.*)$/i);
 
-      // Fallback for old formats
-      const fallbackMatch = !match ? line.match(/^\[?(\d{1,2}:\d{2})\]?\s*([^:]+):\s*(.*)$/i) : null;
-      const simpleMatch = !match && !fallbackMatch ? line.match(/^([^:]+):\s*(.*)$/i) : null;
+      // Secondary fallback for the most basic "Name: Message" format
+      const fallbackMatch = !match ? line.match(/^([^:]+):\s*(.*)$/i) : null;
 
-      const timestamp = match ? match[1] : (fallbackMatch ? fallbackMatch[1] : `00:${(index * 12).toString().padStart(2, '0')}`);
-      const name = match ? match[2].trim() : (fallbackMatch ? fallbackMatch[2].trim() : (simpleMatch ? simpleMatch[1].trim() : 'System'));
+      const timestamp = match ? match[1].replace(/\s/g, '') : `00:${(index * 12).toString().padStart(2, '0')}`;
+      const name = match ? match[2].trim() : (fallbackMatch ? fallbackMatch[1].trim() : 'Speaker');
       const confidence = match ? match[3] : null;
-      const message = match ? match[4].trim() : (fallbackMatch ? fallbackMatch[3].trim() : (simpleMatch ? simpleMatch[2].trim() : line));
+      const message = match ? match[4].trim() : (fallbackMatch ? fallbackMatch[2].trim() : line);
 
-      const speakerType = name.toLowerCase().includes('agent') || name.toLowerCase().includes('sarah')
+      // Remove the prefix from the message if it accidentally got captured (fixing the broken fallback issue)
+      const cleanMessage = message.startsWith(`${timestamp}]`) ? message.replace(`${timestamp}]`, '').trim() : message;
+
+      const speakerType = name.toLowerCase().includes('agent') || name.toLowerCase().includes('sarah') || name.toLowerCase().includes('audit')
         ? 'agent'
         : 'customer';
 
-      // Find violations for this line index
       const lineViolations = selectedAudit.violations?.filter(v => v.transcript_line_index === index) || [];
 
       return {
         speaker: speakerType,
         name: name,
-        message: message,
+        message: cleanMessage,
         timestamp: timestamp,
         confidence: confidence,
         violations: lineViolations
@@ -76,23 +77,33 @@ export const TranscriptView = ({ selectedAudit, onUploadClick }: TranscriptViewP
           {transcriptData.length > 0 ? (
             transcriptData.map((item, i) => (
               <div key={i} className={item.speaker === 'agent' ? "transcript-bubble-agent" : "transcript-bubble-customer"}>
-                <div className="flex justify-between items-center mb-2">
-                  <p className={cn(
-                    "text-[10px] font-black uppercase tracking-widest",
-                    item.speaker === 'agent' ? "text-brand-accent" : "text-zinc-500"
-                  )}>
-                    {item.name}
-                  </p>
-                  <div className="flex items-center gap-2">
+                <div className="flex justify-between items-baseline mb-3">
+                  <div className="flex items-center gap-3">
+                    <p className={cn(
+                      "text-[10px] font-black uppercase tracking-[0.15em]",
+                      item.speaker === 'agent' ? "text-brand-accent/90" : "text-zinc-500"
+                    )}>
+                      {item.name}
+                    </p>
                     {item.confidence && (
-                      <span className="text-[9px] font-bold text-brand-accent/60 bg-brand-accent/5 px-1.5 py-0.5 rounded border border-brand-accent/10">
-                        {item.confidence}% matching signature
-                      </span>
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-800/50 border border-white/5">
+                        <div className={cn(
+                          "w-1 h-1 rounded-full",
+                          parseInt(item.confidence) > 90 ? "bg-brand-green" : "bg-brand-accent"
+                        )} />
+                        <span className="text-[8px] font-bold text-zinc-400">
+                          {item.confidence}%
+                        </span>
+                      </div>
                     )}
-                    <span className="text-[9px] font-mono text-zinc-600">{item.timestamp}</span>
                   </div>
+                  <span className="text-[9px] font-mono font-medium text-zinc-600 tracking-tighter tabular-nums">
+                    {item.timestamp}
+                  </span>
                 </div>
-                <p className="text-sm leading-relaxed text-zinc-300">{item.message}</p>
+                <p className="text-[13px] leading-relaxed text-zinc-300 font-medium">
+                  {item.message}
+                </p>
 
                 {item.violations.length > 0 && (
                   <div className="mt-3 space-y-2">
