@@ -12,16 +12,19 @@ import shutil
 import shutil
 import sys
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+import base64
 
-# Load environment variables
-load_dotenv(".env.local")
+# Load environment variables with absolute path
+env_path = Path(__file__).parent / ".env.local"
+load_dotenv(env_path)
 
 # Add RAG directory to sys.path for imports
 RAG_PATH = Path(__file__).parent / "rag"
 sys.path.append(str(RAG_PATH))
 
 from src.pipeline import RAGPipeline
+from backoff_util import async_exponential_backoff
 
 app = FastAPI()
 
@@ -42,7 +45,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Gemini AI setup
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
@@ -245,9 +248,9 @@ class AuditAIRequest(BaseModel):
     type: str
 
 @app.post("/api/ai/audit")
+@async_exponential_backoff(max_retries=3)
 async def ai_audit_transcript(request: AuditAIRequest):
-    model_name = "gemini-2.0-flash-lite"
-    model = genai.GenerativeModel(model_name)
+    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     
     prompt = f"""
     Analyze the following customer support {request.type} transcript and provide a quality audit.
@@ -273,11 +276,36 @@ async def ai_audit_transcript(request: AuditAIRequest):
     """
     
     try:
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.GenerationConfig(
-                response_mime_type="application/json",
-            )
+        response = client.models.generate_content(
+            model=model_name,
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json",
+                "response_schema": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "empathy_score": {"type": "INTEGER"},
+                        "resolution_score": {"type": "INTEGER"},
+                        "compliance_score": {"type": "INTEGER"},
+                        "overall_score": {"type": "INTEGER"},
+                        "violations": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "type": {"type": "STRING"},
+                                    "description": {"type": "STRING"},
+                                    "severity": {"type": "STRING"},
+                                    "transcript_line_index": {"type": "INTEGER"}
+                                },
+                                "required": ["type", "description", "severity", "transcript_line_index"]
+                            }
+                        },
+                        "suggestions": {"type": "STRING"}
+                    },
+                    "required": ["empathy_score", "resolution_score", "compliance_score", "overall_score", "violations", "suggestions"]
+                }
+            }
         )
         return json.loads(response.text)
     except Exception as e:
@@ -289,18 +317,19 @@ class TranscribeRequest(BaseModel):
     mime_type: str
 
 @app.post("/api/ai/transcribe")
+@async_exponential_backoff(max_retries=3)
 async def ai_transcribe_audio(request: TranscribeRequest):
-    model_name = "gemini-2.0-flash-lite"
-    model = genai.GenerativeModel(model_name)
+    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     
     try:
-        response = model.generate_content([
-            {
-                "mime_type": request.mime_type,
-                "data": request.base64_data
-            },
-            {
-                "text": """Transcribe this customer support call audio accurately. 
+        response = client.models.generate_content(
+            model=model_name,
+            contents=[
+                genai.types.Part.from_bytes(
+                    data=base64.b64decode(request.base64_data),
+                    mime_type=request.mime_type
+                ),
+                genai.types.Part.from_text(text="""Transcribe this customer support call audio accurately. 
               CRITICAL INSTRUCTION: You must differentiate between the two speakers. 
               Format the output so each line starts with EXACTLY either "Agent: " or "Customer: ". 
               
@@ -313,8 +342,9 @@ async def ai_transcribe_audio(request: TranscribeRequest):
               - "Please hold"
               
               Provide only the transcript text."""
-            }
-        ])
+                )
+            ]
+        )
         return {"transcript": response.text}
     except Exception as e:
         print(f"Gemini Transcribe Error: {e}")
