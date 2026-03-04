@@ -1,4 +1,4 @@
-from audio_processor import SpeakerMixtureModel
+from audio import SpeakerMixtureModel
 
 def test_model():
     model = SpeakerMixtureModel()

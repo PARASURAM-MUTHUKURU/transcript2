@@ -12,6 +12,7 @@ import sys
 BACKEND_PATH = Path(__file__).parent.parent
 sys.path.append(str(BACKEND_PATH))
 from backoff_util import async_exponential_backoff
+from config.prompts import AUDIT_PROMPT_TEMPLATE, TRANSCRIBE_DIARIZATION_PROMPT
 
 # Load environment variables
 env_path = BACKEND_PATH / ".env.local"
@@ -31,28 +32,10 @@ class AuditAIRequest(BaseModel):
 async def ai_audit_transcript(request: AuditAIRequest):
     model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     
-    prompt = f"""
-    Analyze the following customer support {request.type} transcript and provide a quality audit.
-    
-    Metrics to score (0-100):
-    1. Empathy: How well did the agent understand and validate the customer's feelings?
-    2. Resolution: Did the agent solve the problem or provide a clear path forward?
-    3. Compliance: Did the agent follow standard protocols (greeting, privacy check, closing)?
-    
-    Identify specific compliance violations. For each violation, specify:
-    - type: A short name for the violation
-    - description: A detailed explanation
-    - severity: 'Critical', 'Warning', or 'Info'
-    - transcript_line_index: The 0-based index of the line in the transcript where this violation occurred or is most relevant.
-    
-    Transcript:
-    \"\"\"
-    {request.transcript}
-    \"\"\"
-    
-    Return the result as a raw JSON object with the following keys:
-    empathy_score, resolution_score, compliance_score, overall_score, violations (list of objects with keys type, description, severity, transcript_line_index), suggestions.
-    """
+    prompt = AUDIT_PROMPT_TEMPLATE.format(
+        transcript_type=request.type,
+        transcript=request.transcript
+    )
     
     try:
         response = client.models.generate_content(
@@ -108,29 +91,7 @@ async def ai_transcribe_audio(request: TranscribeRequest):
                     data=base64.b64decode(request.base64_data),
                     mime_type=request.mime_type
                 ),
-                genai.types.Part.from_text(text="""Transcribe this customer support call audio accurately. 
-              
-              TASK: Perform ADVANCED SPEAKER DIARIZATION. 
-              Analyze the acoustic subpopulations and vocal signatures to distinguish speakers.
-              
-              FORMAT: Each line MUST follow this EXACT format:
-              [MM:SS] Speaker Name (Confidence%): Message
-              
-              EXAMPLES:
-              [00:05] Agent (98%): Thank you for calling tech support.
-              [00:12] Customer (85%): My internet is down again.
-              
-              HEURISTICS for identification:
-              - "Agent": Look for standard greetings, professional tone, and process-oriented speech.
-              - "Customer": Look for the person stating the problem or providing details.
-              - If names are explicitly mentioned, use them.
-              
-              CRITICAL:
-              1. Ensure timestamps are accurate.
-              2. Provide a confidence percentage for each attribution based on the clarity of the vocal signature.
-              
-              Provide ONLY the transcript text in the specified format."""
-                )
+                genai.types.Part.from_text(text=TRANSCRIBE_DIARIZATION_PROMPT)
             ]
         )
         return {"transcript": response.text}

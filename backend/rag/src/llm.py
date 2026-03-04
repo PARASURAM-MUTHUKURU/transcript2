@@ -5,6 +5,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 # Add backend to path to import backoff_util
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 from backoff_util import exponential_backoff
+from config.prompts import RAG_QA_PROMPT
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
@@ -19,17 +20,7 @@ class GeminiLLM:
 
     @exponential_backoff(max_retries=3)
     def generate(self, question: str, context: str) -> str:
-        prompt_template = ChatPromptTemplate.from_template(
-            """Answer based **only** on the context below. Be concise and factual.
-If not enough information, reply exactly: "Insufficient information in documents."
-
-Context:
-{context}
-
-Question: {question}
-
-Answer:"""
-        )
+        prompt_template = ChatPromptTemplate.from_template(RAG_QA_PROMPT)
 
         chain = prompt_template | self.llm | StrOutputParser()
         return chain.invoke({"context": context, "question": question}).strip()
