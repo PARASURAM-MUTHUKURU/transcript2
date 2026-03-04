@@ -1,5 +1,3 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
 export interface Violation {
   type: string;
   description: string;
@@ -16,6 +14,9 @@ export interface AuditResult {
   suggestions: string;
 }
 
+// Proxied through our Python backend for security
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export async function auditTranscript(transcript: string, type: 'chat' | 'call'): Promise<AuditResult> {
   const response = await fetch(`${API_URL}/api/ai/audit`, {
     method: 'POST',
@@ -26,15 +27,21 @@ export async function auditTranscript(transcript: string, type: 'chat' | 'call')
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    console.error("Gemini Audit Error:", error);
-    throw new Error("Failed to audit transcript");
+    throw new Error('Failed to audit transcript directly from backend');
   }
 
-  return response.json();
+  const data = await response.json();
+
+  if (data.error) {
+    // Check if the backend returned a custom error wrapped in JSON
+    throw new Error(data.error);
+  }
+
+  return data;
 }
 
 export async function transcribeAudio(base64Data: string, mimeType: string): Promise<string> {
+  // We send the base64 string to the backend to keep the Gemini API key secure
   const response = await fetch(`${API_URL}/api/ai/transcribe`, {
     method: 'POST',
     headers: {
@@ -47,11 +54,14 @@ export async function transcribeAudio(base64Data: string, mimeType: string): Pro
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    console.error("Gemini Transcribe Error:", error);
-    throw new Error("Failed to transcribe audio");
+    throw new Error('Failed to transcribe audio from backend');
   }
 
   const data = await response.json();
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
   return data.transcript || "";
 }
