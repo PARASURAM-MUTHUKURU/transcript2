@@ -1,26 +1,23 @@
-import React from 'react';
-import { Users, TrendingDown, Target, Award, AlertTriangle, User, Zap, ShieldCheck } from 'lucide-react';
-import { motion } from 'motion/react';
+import React, { useState } from 'react';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  Cell,
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis
-} from 'recharts';
+  FileText,
+  Calendar,
+  Users,
+  TrendingUp,
+  Download,
+  Filter,
+  Clock,
+  Settings,
+  Plus,
+  ChevronRight,
+  FileCheck,
+  Loader2,
+  Trash2
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Analytics, Audit } from '../types';
 import { cn } from '../lib/utils';
-import { Skeleton } from './Skeleton';
+import { useToast } from './Toasts';
 
 interface ReportsViewProps {
   analytics: Analytics | null;
@@ -28,267 +25,300 @@ interface ReportsViewProps {
 }
 
 export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
-  if (!analytics) return (
-    <div className="flex-1 overflow-y-auto bg-brand-bg p-4 md:p-8 space-y-8">
-      <div className="max-w-7xl mx-auto space-y-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <Skeleton className="h-10 w-64" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <Skeleton className="w-32 h-10 rounded-2xl" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Skeleton className="h-40 rounded-[2rem]" />
-          <Skeleton className="h-40 rounded-[2rem]" />
-          <Skeleton className="h-40 rounded-[2rem]" />
-          <Skeleton className="h-40 rounded-[2rem]" />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Skeleton className="lg:col-span-1 h-[600px] rounded-[2.5rem]" />
-          <div className="lg:col-span-2 space-y-8">
-            <Skeleton className="h-[400px] rounded-[2.5rem]" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Skeleton className="h-64 rounded-[2.5rem]" />
-              <Skeleton className="h-64 rounded-[2.5rem]" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const { showToast } = useToast();
+  const [reportType, setReportType] = useState('Performance');
+  const [dateRange, setDateRange] = useState('This Week');
+  const [team, setTeam] = useState('All Teams');
+  const [format, setFormat] = useState('PDF');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(['Quality Scores', 'Compliance Rate', 'Violation Details', 'Agent Rankings']);
 
-  const totalAgents = analytics.stats.length;
-  const avgOverallScore = analytics.stats.reduce((acc, curr) => acc + curr.avg_score, 0) / (totalAgents || 1);
+  const [recentReports, setRecentReports] = useState([
+    { id: 1, name: 'Weekly Performance Audit', date: 'Oct 12, 2023', type: 'PDF', status: 'Completed' },
+    { id: 2, name: 'Compliance Violation Summary', date: 'Oct 10, 2023', type: 'Excel', status: 'Completed' },
+    { id: 3, name: 'Agent Ranking Quarterly', date: 'Oct 05, 2023', type: 'CSV', status: 'Completed' },
+  ]);
 
-  // Identify metrics across all audits
-  const aggregateMetrics = audits.reduce((acc, audit) => {
-    acc.empathy += audit.empathy_score || 0;
-    acc.resolution += audit.resolution_score || 0;
-    acc.compliance += audit.compliance_score || 0;
-    return acc;
-  }, { empathy: 0, resolution: 0, compliance: 0 });
+  const [scheduledReports, setScheduledReports] = useState([
+    { id: 1, name: 'Daily Compliance Feed', nextRun: 'Tomorrow, 08:00 AM', frequency: 'Daily' },
+    { id: 2, name: 'Monthly Executive Summary', nextRun: 'Nov 01, 2023', frequency: 'Monthly' },
+  ]);
 
-  const auditCount = audits.length || 1;
-  const metricsData = [
-    { subject: 'Empathy', A: Math.round(aggregateMetrics.empathy / auditCount), fullMark: 100 },
-    { subject: 'Resolution', A: Math.round(aggregateMetrics.resolution / auditCount), fullMark: 100 },
-    { subject: 'Compliance', A: Math.round(aggregateMetrics.compliance / auditCount), fullMark: 100 },
-  ];
+  const toggleMetric = (metric: string) => {
+    setSelectedMetrics(prev =>
+      prev.includes(metric) ? prev.filter(m => m !== metric) : [...prev, metric]
+    );
+  };
 
-  const performanceBreakdown = metricsData.map(m => ({ name: m.subject, score: m.A })).sort((a, b) => a.score - b.score);
-  const lowestMetric = performanceBreakdown[0];
+  const handleGenerateReport = async () => {
+    if (selectedMetrics.length === 0) {
+      showToast('Please select at least one metric.', 'error');
+      return;
+    }
 
-  // Leaderboard data
-  const leaderboard = [...analytics.stats].sort((a, b) => b.avg_score - a.avg_score).slice(0, 5);
+    setIsGenerating(true);
+    showToast('Generating report...', 'info');
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const newReport = {
+      id: Date.now(),
+      name: `${reportType} Report - ${dateRange}`,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+      type: format,
+      status: 'Completed'
+    };
+
+    setRecentReports(prev => [newReport, ...prev]);
+    setIsGenerating(false);
+    showToast(`${reportType} report generated successfully!!`, 'success');
+
+    // Auto download
+    downloadReport(newReport.name, newReport.type);
+  };
+
+  const downloadReport = (name: string, format: string) => {
+    const content = `AuditAI Generated Report\nName: ${name}\nFormat: ${format}\nDate: ${new Date().toLocaleString()}\n\nMetrics Included:\n${selectedMetrics.join('\n')}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${name.replace(/\s+/g, '_')}.${format.toLowerCase()}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast(`Downloading ${format} file...`, 'info');
+  };
+
+  const handleAddSchedule = () => {
+    const newSchedule = {
+      id: Date.now(),
+      name: `Automated ${reportType} Feed`,
+      nextRun: 'Calculated based on frequency',
+      frequency: 'Weekly'
+    };
+    setScheduledReports(prev => [newSchedule, ...prev]);
+    showToast('New schedule created successfully!', 'success');
+  };
+
+  const deleteRecent = (id: number) => {
+    setRecentReports(prev => prev.filter(r => r.id !== id));
+    showToast('Report removed from history.', 'info');
+  };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-brand-bg p-4 md:p-8 space-y-8">
+    <div className="flex-1 overflow-y-auto bg-brand-bg p-4 md:p-8 space-y-12">
       <div className="max-w-7xl mx-auto space-y-12">
-        {/* Top Header - Glassmorphism */}
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
-            <h2 className="text-4xl font-display font-black text-white tracking-tight">Intelligence <span className="text-brand-accent">Hub</span></h2>
-            <p className="text-zinc-400 font-medium">Real-time performance metrics and quality insights.</p>
+            <h2 className="text-4xl font-display font-black text-white tracking-tight">Reports <span className="text-brand-accent">Engine</span></h2>
+            <p className="text-zinc-400 font-medium">Generate custom insights, schedule automation, and manage history.</p>
           </div>
           <div className="flex items-center gap-2 bg-brand-surface/50 backdrop-blur-md border border-brand-border px-4 py-2 rounded-2xl">
-            <div className="w-2 h-2 bg-brand-green rounded-full animate-pulse"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-brand-green">Live Feed Active</span>
+            <Clock className="text-zinc-500" size={16} />
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Last updated just now</span>
           </div>
         </div>
 
-        {/* Hero Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="gradient-border bg-brand-surface/30 backdrop-blur-xl p-8 rounded-[2rem] space-y-3 relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-brand-accent/10 rounded-full blur-3xl group-hover:bg-brand-accent/20 transition-all"></div>
-            <Users className="text-brand-accent" size={24} />
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Active Agents</p>
-              <p className="text-4xl font-display font-black text-white mt-1">{totalAgents}</p>
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="gradient-border bg-brand-surface/30 backdrop-blur-xl p-8 rounded-[2rem] space-y-3 relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-brand-green/10 rounded-full blur-3xl group-hover:bg-brand-green/20 transition-all"></div>
-            <Zap className="text-brand-green" size={24} />
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Avg Quality</p>
-              <p className="text-4xl font-display font-black text-brand-green mt-1">{Math.round(avgOverallScore)}%</p>
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="gradient-border bg-brand-surface/30 backdrop-blur-xl p-8 rounded-[2rem] space-y-3 relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-brand-red/10 rounded-full blur-3xl group-hover:bg-brand-red/20 transition-all"></div>
-            <TrendingDown className="text-brand-red" size={24} />
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Lagging Area</p>
-              <p className="text-2xl font-display font-black text-brand-red mt-2 uppercase">{lowestMetric.name}</p>
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="gradient-border bg-brand-surface/30 backdrop-blur-xl p-8 rounded-[2rem] space-y-3 relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-brand-accent/10 rounded-full blur-3xl group-hover:bg-brand-accent/20 transition-all"></div>
-            <Award className="text-brand-accent" size={24} />
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Total Audits</p>
-              <p className="text-4xl font-display font-black text-white mt-1">{audits.length}</p>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Main Analytics Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-          {/* Radar Chart - Skills Distribution */}
-          <div className="lg:col-span-1 bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] space-y-8 flex flex-col">
-            <div className="space-y-1">
-              <h3 className="text-xl font-display font-bold">Skills Matrix</h3>
-              <p className="text-xs text-zinc-500 font-medium">Aggregate metric distribution</p>
-            </div>
-
-            <div className="flex-1 flex items-center justify-center min-h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={metricsData}>
-                  <PolarGrid stroke="#27272a" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#71717a', fontSize: 12, fontWeight: 700 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Radar
-                    name="Performance"
-                    dataKey="A"
-                    stroke="#f27d26"
-                    fill="#f27d26"
-                    fillOpacity={0.5}
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '12px' }}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="space-y-4">
-              {metricsData.map(m => (
-                <div key={m.subject} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={cn("w-2 h-2 rounded-full", m.A > 80 ? "bg-brand-green" : m.A > 60 ? "bg-brand-accent" : "bg-brand-red")}></div>
-                    <span className="text-xs font-bold text-zinc-400">{m.subject}</span>
-                  </div>
-                  <span className="text-sm font-black">{m.A}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Performance & Trends - 2 Columns */}
+          {/* Report Builder - 2 Columns */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Trend Graphs */}
-            <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] space-y-6">
-              <div className="flex justify-between items-center">
-                <div className="space-y-1">
-                  <h3 className="text-xl font-display font-bold">Quality & Compliance</h3>
-                  <p className="text-xs text-zinc-500 font-medium tracking-wide">Performance drift over 30 days</p>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-1 bg-brand-accent rounded-full"></div>
-                    <span className="text-[10px] font-black uppercase text-zinc-500">Quality</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-1 bg-brand-green rounded-full"></div>
-                    <span className="text-[10px] font-black uppercase text-zinc-500">Compliance</span>
-                  </div>
-                </div>
-              </div>
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={analytics.trend}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                    <XAxis dataKey="date" stroke="#3f3f46" fontSize={10} axisLine={false} tickLine={false} />
-                    <YAxis domain={[0, 100]} hide />
-                    <Tooltip contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '12px' }} />
-                    <Line type="monotone" dataKey="avg_score" stroke="#f27d26" strokeWidth={4} dot={false} activeDot={{ r: 6 }} />
-                    <Line type="monotone" dataKey="avg_compliance" stroke="#10b981" strokeWidth={4} dot={false} activeDot={{ r: 6 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-10 rounded-[3rem] space-y-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Agent Analytics Bar Chart */}
-              <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] space-y-6">
-                <h3 className="text-lg font-display font-bold">Agent Variance</h3>
-                <div className="h-48 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={analytics.stats}>
-                      <Bar dataKey="avg_score" radius={[8, 8, 8, 8]}>
-                        {analytics.stats.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.avg_score > 80 ? '#10b981' : entry.avg_score > 60 ? '#f27d26' : '#ef4444'} fillOpacity={0.8} />
-                        ))}
-                      </Bar>
-                      <XAxis dataKey="agent_name" hide />
-                      <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ display: 'none' }} />
-                    </BarChart>
-                  </ResponsiveContainer>
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-brand-accent/20 rounded-2xl border border-brand-accent/30">
+                  <Plus className="text-brand-accent" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-display font-black text-white">Report Builder</h3>
+                  <p className="text-sm text-zinc-500 font-medium">Configure and generate a manual report.</p>
                 </div>
               </div>
 
-              {/* Leaderboard Card */}
-              <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] space-y-6">
-                <div className="flex items-center gap-2">
-                  <Award className="text-brand-accent" size={20} />
-                  <h3 className="text-lg font-display font-bold">Top Performers</h3>
-                </div>
-                <div className="space-y-4">
-                  {leaderboard.map((agent, i) => (
-                    <div key={agent.agent_name} className="flex items-center justify-between p-3 rounded-2xl bg-brand-bg/50 border border-brand-border/50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-black border border-brand-border">
-                          #{i + 1}
-                        </div>
-                        <span className="text-sm font-bold text-zinc-200">{agent.agent_name}</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-black text-brand-green">{agent.avg_score}%</p>
-                        <p className="text-[10px] text-zinc-500 uppercase font-black">{agent.total_audits} Audits</p>
-                      </div>
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <BuilderSelect
+                  label="REPORT TYPE"
+                  value={reportType}
+                  onChange={setReportType}
+                  options={['Performance', 'Compliance', 'Resolution', 'Coaching']}
+                />
+                <BuilderSelect
+                  label="DATE RANGE"
+                  value={dateRange}
+                  onChange={setDateRange}
+                  options={['Today', 'This Week', 'This Month', 'Last 30 Days', 'Custom']}
+                />
+                <BuilderSelect
+                  label="TEAM"
+                  value={team}
+                  onChange={setTeam}
+                  options={['All Teams', 'Support Alpha', 'Sales Beta', 'Tech Gamma']}
+                />
+                <BuilderSelect
+                  label="FORMAT"
+                  value={format}
+                  onChange={setFormat}
+                  options={['PDF', 'Excel', 'CSV']}
+                />
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-brand-border/50">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">INCLUDE METRICS</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {['Quality Scores', 'Compliance Rate', 'Violation Details', 'Agent Rankings', 'Trend Analysis', 'Suggestions'].map((metric) => (
+                    <label key={metric} className={cn(
+                      "flex items-center gap-3 p-4 border rounded-2xl cursor-pointer transition-all group",
+                      selectedMetrics.includes(metric)
+                        ? "bg-brand-accent/10 border-brand-accent/40"
+                        : "bg-brand-bg/50 border-brand-border hover:border-zinc-700"
+                    )}>
+                      <input
+                        type="checkbox"
+                        checked={selectedMetrics.includes(metric)}
+                        onChange={() => toggleMetric(metric)}
+                        className="w-4 h-4 rounded border-brand-border bg-brand-surface text-brand-accent focus:ring-brand-accent/50"
+                      />
+                      <span className={cn(
+                        "text-sm font-bold transition-colors",
+                        selectedMetrics.includes(metric) ? "text-brand-accent" : "text-zinc-400 group-hover:text-zinc-200"
+                      )}>{metric}</span>
+                    </label>
                   ))}
                 </div>
               </div>
+
+              <button
+                onClick={handleGenerateReport}
+                disabled={isGenerating}
+                className={cn(
+                  "w-full py-6 rounded-3xl font-black text-sm uppercase tracking-widest shadow-2xl transition-all flex items-center justify-center gap-3",
+                  isGenerating
+                    ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                    : "bg-brand-accent text-white hover:bg-brand-accent/90"
+                )}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Download size={20} />
+                    Generate Report →
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Side Panels - 1 Column */}
+          <div className="space-y-8">
+            {/* Recent Reports */}
+            <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] space-y-6">
+              <h3 className="text-xl font-display font-bold">Recent Reports</h3>
+              <div className="space-y-3 min-h-[200px]">
+                <AnimatePresence initial={false}>
+                  {recentReports.map(report => (
+                    <motion.div
+                      key={report.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      className="flex items-center justify-between p-4 bg-brand-bg/50 border border-brand-border rounded-2xl group hover:border-brand-accent/30 transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-zinc-800 rounded-xl border border-brand-border">
+                          <FileText className="text-zinc-500 group-hover:text-brand-accent transition-colors" size={16} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-zinc-200">{report.name}</p>
+                          <p className="text-[10px] text-zinc-500 font-black uppercase">{report.date} • {report.type}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Download
+                          size={16}
+                          className="text-zinc-600 hover:text-brand-accent transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadReport(report.name, report.type);
+                          }}
+                        />
+                        <Trash2
+                          size={16}
+                          className="text-zinc-600 hover:text-brand-red transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteRecent(report.id);
+                          }}
+                        />
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                {recentReports.length === 0 && (
+                  <div className="h-full flex flex-col items-center justify-center text-zinc-600 py-10 border border-dashed border-brand-border rounded-2xl">
+                    <FileText size={32} strokeWidth={1} />
+                    <p className="text-xs font-bold mt-2">No reports yet</p>
+                  </div>
+                )}
+              </div>
+              <button className="w-full py-3 text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-brand-accent transition-colors border border-dashed border-brand-border rounded-xl">
+                View All History
+              </button>
+            </div>
+
+            {/* Scheduled Tasks */}
+            <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-display font-bold">Scheduled</h3>
+                <Settings size={18} className="text-zinc-600 cursor-pointer hover:text-white transition-colors" />
+              </div>
+              <div className="space-y-3">
+                <AnimatePresence initial={false}>
+                  {scheduledReports.map(task => (
+                    <motion.div
+                      key={task.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-brand-bg/50 border border-brand-border rounded-2xl space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-bold text-zinc-200">{task.name}</p>
+                        <span className="px-2 py-1 bg-brand-accent/10 border border-brand-accent/20 rounded-md text-[8px] font-black uppercase text-brand-accent">{task.frequency}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar size={12} className="text-zinc-500" />
+                        <p className="text-[10px] text-zinc-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis">Next run: {task.nextRun}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+              <button
+                onClick={handleAddSchedule}
+                className="w-full bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+              >
+                Add Schedule
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Dynamic Insight Generator */}
-        <div className="bg-gradient-to-r from-brand-accent/20 to-brand-green/10 border border-brand-accent/20 p-10 rounded-[3rem] relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 px-4 py-2 bg-brand-accent/20 rounded-full w-fit border border-brand-accent/30">
-                <Target size={16} className="text-brand-accent" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-brand-accent">Strategic Insight</span>
-              </div>
-              <h3 className="text-3xl font-display font-black text-white leading-tight">
-                Enhance <span className="text-brand-accent underline decoration-brand-accent/30 underline-offset-8">{lowestMetric.name}</span> across your team.
-              </h3>
-              <p className="text-zinc-400 text-lg leading-relaxed">
-                Our analysis shows that {lowestMetric.name} is currently the primary friction point. Improving this metric by <span className="text-brand-green font-bold">15%</span> could boost overall customer satisfaction by <span className="text-brand-accent font-bold">32%</span> based on current trends.
-              </p>
-              <button className="bg-white text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">
-                Generate Training Plan
-              </button>
+        {/* Dynamic Insight Section (reused with refinement) */}
+        <div className="bg-gradient-to-r from-brand-accent/20 to-brand-green/10 border border-brand-accent/20 p-10 rounded-[3rem] items-center">
+          <div className="flex items-center gap-6">
+            <div className="p-6 bg-brand-surface rounded-full shadow-2xl">
+              <FileCheck size={48} className="text-brand-accent" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-6 bg-brand-surface/40 backdrop-blur-md border border-brand-border rounded-3xl space-y-2">
-                <ShieldCheck className="text-brand-green" size={20} />
-                <p className="text-2xl font-display font-black">94%</p>
-                <p className="text-[10px] font-black text-zinc-500 uppercase">Compliance Stability</p>
-              </div>
-              <div className="p-6 bg-brand-surface/40 backdrop-blur-md border border-brand-border rounded-3xl space-y-2">
-                <Zap className="text-brand-accent" size={20} />
-                <p className="text-2xl font-display font-black">+12%</p>
-                <p className="text-[10px] font-black text-zinc-500 uppercase">Weekly Velocity</p>
-              </div>
+            <div className="space-y-2">
+              <h3 className="text-3xl font-display font-black text-white leading-tight">Automation Active</h3>
+              <p className="text-zinc-400 text-lg">Your reports are being automatically summarized by Gemini 1.5 Pro and delivered to your Slack channel.</p>
             </div>
           </div>
         </div>
@@ -296,3 +326,23 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
     </div>
   );
 };
+
+const BuilderSelect = ({ label, value, onChange, options }: any) => (
+  <div className="space-y-3">
+    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">{label}</p>
+    <div className="relative group">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-brand-bg/50 border border-brand-border rounded-2xl py-4 px-5 text-sm font-bold text-zinc-300 appearance-none focus:outline-none focus:border-brand-accent/50 transition-all cursor-pointer"
+      >
+        {options.map((opt: string) => (
+          <option key={opt} value={opt} className="bg-brand-surface">{opt}</option>
+        ))}
+      </select>
+      <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500 group-hover:text-brand-accent transition-colors">
+        <ChevronRight size={16} className="rotate-90" />
+      </div>
+    </div>
+  </div>
+);

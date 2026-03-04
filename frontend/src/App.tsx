@@ -26,6 +26,7 @@ import { ReportsView } from './components/ReportsView';
 import { RAGSearch } from './components/RAGSearch';
 import { AgentsDashboard } from './components/AgentsDashboard';
 import { LandingPage } from './components/LandingPage';
+import { DashboardView } from './components/DashboardView';
 import { ThemeProvider, ThemeToggle } from './components/ThemeToggle';
 import { ToastProvider, useToast } from './components/Toasts';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -179,6 +180,7 @@ function AppContent() {
           <nav className="hidden md:flex items-center gap-1">
             {view !== 'landing' && (
               <>
+                <NavItem icon={LayoutDashboard} label="Dashboard" active={view === 'dashboard'} onClick={() => setView('dashboard')} />
                 <NavItem icon={MessageSquare} label="Transcript Review" active={view === 'audits'} onClick={() => setView('audits')} />
                 <NavItem icon={BookOpen} label="Knowledge Base" active={view === 'knowledge'} onClick={() => setView('knowledge')} />
                 <NavItem icon={Users} label="Agents" active={view === 'agents'} onClick={() => setView('agents')} />
@@ -206,6 +208,8 @@ function AppContent() {
       <main className="flex-1 flex overflow-hidden">
         {view === 'landing' ? (
           <LandingPage onGetStarted={() => setView('audits')} />
+        ) : view === 'dashboard' ? (
+          <DashboardView analytics={analytics} audits={audits} />
         ) : view === 'audits' ? (
           <>
             <CallHistorySidebar
@@ -258,12 +262,10 @@ function AppContent() {
           <AgentsDashboard analytics={analytics} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-zinc-500">
-            <p className="font-display font-bold text-lg">Coming Soon: {view.charAt(0).toUpperCase() + view.slice(1)} View</p>
+            <p className="font-display font-bold text-lg">Select a view to get started</p>
           </div>
         )}
-      </main>
-
-      <AuditModal
+      </main>      <AuditModal
         show={showNewAuditModal}
         onClose={() => setShowNewAuditModal(false)}
         agents={agents}
