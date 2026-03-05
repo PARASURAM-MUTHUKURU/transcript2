@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, memo } from 'react';
 import {
     Users,
     MessageSquare,
@@ -18,46 +18,62 @@ interface DashboardViewProps {
     audits: Audit[];
 }
 
-export const DashboardView = ({ analytics, audits }: DashboardViewProps) => {
+export const DashboardView = memo(({ analytics, audits }: DashboardViewProps) => {
     const interactionsAudited = audits.length;
-    const stats = analytics?.stats || [];
 
-    const avgQualityScore = stats.length > 0
-        ? stats.reduce((acc, curr) => acc + curr.avg_score, 0) / stats.length
-        : audits.length > 0
-            ? audits.reduce((acc, a) => acc + (a.overall_score || 0), 0) / audits.length
-            : 0;
+    const stats = useMemo(() => analytics?.stats || [], [analytics?.stats]);
 
-    const complianceViolations = audits.reduce((acc, audit) => acc + (audit.violations?.length || 0), 0);
-    const resolutionRate = audits.reduce((acc, audit) => acc + (audit.resolution_score || 0), 0) / (audits.length || 1);
+    const avgQualityScore = useMemo(() => {
+        return stats.length > 0
+            ? stats.reduce((acc, curr) => acc + curr.avg_score, 0) / stats.length
+            : audits.length > 0
+                ? audits.reduce((acc, a) => acc + (a.overall_score || 0), 0) / audits.length
+                : 0;
+    }, [stats, audits]);
 
-    const trendData = (analytics?.trend || []).map(t => ({
-        date: new Date(t.date),
-        score: t.avg_score,
-        compliance: t.avg_compliance
-    }));
+    const complianceViolations = useMemo(() => {
+        return audits.reduce((acc, audit) => acc + (audit.violations?.length || 0), 0);
+    }, [audits]);
 
-    const topViolations = audits.reduce((acc: any[], audit) => {
-        audit.violations?.forEach((v: any) => {
-            const existing = acc.find(item => item.label === v.category);
-            if (existing) existing.value++;
-            else acc.push({ label: v.category, value: 1 });
-        });
-        return acc;
-    }, []).sort((a, b) => b.value - a.value).slice(0, 5);
+    const resolutionRate = useMemo(() => {
+        return audits.reduce((acc, audit) => acc + (audit.resolution_score || 0), 0) / (audits.length || 1);
+    }, [audits]);
 
-    const leaderboardData = stats.map(s => ({
-        name: s.agent_name,
-        score: s.avg_score
-    })).sort((a, b) => b.score - a.score).slice(0, 5);
+    const trendData = useMemo(() => {
+        return (analytics?.trend || []).map(t => ({
+            date: new Date(t.date),
+            score: t.avg_score,
+            compliance: t.avg_compliance
+        }));
+    }, [analytics?.trend]);
 
-    const scoreDistribution = [
-        { label: '0-20', value: audits.filter(a => (a.overall_score || 0) < 20).length },
-        { label: '21-40', value: audits.filter(a => (a.overall_score || 0) >= 20 && (a.overall_score || 0) < 40).length },
-        { label: '41-60', value: audits.filter(a => (a.overall_score || 0) >= 40 && (a.overall_score || 0) < 60).length },
-        { label: '61-80', value: audits.filter(a => (a.overall_score || 0) >= 60 && (a.overall_score || 0) < 80).length },
-        { label: '81-100', value: audits.filter(a => (a.overall_score || 0) >= 80).length },
-    ];
+    const topViolations = useMemo(() => {
+        return audits.reduce((acc: any[], audit) => {
+            audit.violations?.forEach((v: any) => {
+                const existing = acc.find(item => item.label === v.category);
+                if (existing) existing.value++;
+                else acc.push({ label: v.category, value: 1 });
+            });
+            return acc;
+        }, []).sort((a, b) => b.value - a.value).slice(0, 5);
+    }, [audits]);
+
+    const leaderboardData = useMemo(() => {
+        return stats.map(s => ({
+            name: s.agent_name,
+            score: s.avg_score
+        })).sort((a, b) => b.score - a.score).slice(0, 5);
+    }, [stats]);
+
+    const scoreDistribution = useMemo(() => {
+        return [
+            { label: '0-20', value: audits.filter(a => (a.overall_score || 0) < 20).length },
+            { label: '21-40', value: audits.filter(a => (a.overall_score || 0) >= 20 && (a.overall_score || 0) < 40).length },
+            { label: '41-60', value: audits.filter(a => (a.overall_score || 0) >= 40 && (a.overall_score || 0) < 60).length },
+            { label: '61-80', value: audits.filter(a => (a.overall_score || 0) >= 60 && (a.overall_score || 0) < 80).length },
+            { label: '81-100', value: audits.filter(a => (a.overall_score || 0) >= 80).length },
+        ];
+    }, [audits]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -215,7 +231,18 @@ export const DashboardView = ({ analytics, audits }: DashboardViewProps) => {
                                         cornerRadius: 15,
                                     },
                                 ]}
-                                slotProps={{ legend: { labelStyle: { fill: '#71717a', fontSize: 11, fontWeight: 700 } } }}
+                                slotProps={{
+                                    legend: {
+                                        sx: {
+                                            '& .MuiChartsLegend-label': {
+                                                fill: '#71717a', // Keeping fill for backward compatibility, might need color
+                                                color: '#71717a',
+                                                fontSize: 11,
+                                                fontWeight: 700
+                                            }
+                                        }
+                                    }
+                                }}
                                 margin={{ left: 10, right: 10, top: 10, bottom: 10 }}
                             />
                         </div>
@@ -249,7 +276,7 @@ export const DashboardView = ({ analytics, audits }: DashboardViewProps) => {
             </motion.div>
         </div>
     );
-};
+});
 
 const MetricCard = ({ icon: Icon, label, value, color, bg, trend }: any) => (
     <motion.div

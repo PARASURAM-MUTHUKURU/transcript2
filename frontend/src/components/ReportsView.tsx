@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import {
   FileText,
   Calendar,
@@ -24,7 +24,7 @@ interface ReportsViewProps {
   audits: Audit[];
 }
 
-export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
+export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
   const { showToast } = useToast();
   const [reportType, setReportType] = useState('Performance');
   const [dateRange, setDateRange] = useState('This Week');
@@ -325,7 +325,7 @@ export const ReportsView = ({ analytics, audits }: ReportsViewProps) => {
       </div>
     </div>
   );
-};
+});
 
 const BuilderSelect = ({ label, value, onChange, options }: any) => (
   <div className="space-y-3">
