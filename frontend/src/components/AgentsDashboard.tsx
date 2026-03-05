@@ -34,9 +34,10 @@ import { AgentSkeleton, AuditSkeleton, Skeleton } from './Skeleton';
 
 interface AgentsDashboardProps {
     analytics: Analytics | null;
+    onAuditSelect?: (auditId: number) => void;
 }
 
-export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
+export const AgentsDashboard = ({ analytics, onAuditSelect }: AgentsDashboardProps) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null);
     const [agentDetails, setAgentDetails] = useState<AgentAnalytics | null>(null);
@@ -273,7 +274,14 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                         </div>
                                         <div className="space-y-3">
                                             {agentDetails?.recent_audits.map(audit => (
-                                                <div key={audit.id} className="flex items-center justify-between p-4 bg-brand-bg/50 border border-brand-border/50 rounded-2xl group hover:border-brand-accent/30 transition-all">
+                                                <div
+                                                    key={audit.id}
+                                                    onClick={() => onAuditSelect?.(audit.id)}
+                                                    className={cn(
+                                                        "flex items-center justify-between p-4 bg-brand-bg/50 border border-brand-border/50 rounded-2xl group transition-all",
+                                                        onAuditSelect ? "cursor-pointer hover:border-brand-accent/30" : ""
+                                                    )}
+                                                >
                                                     <div className="flex items-center gap-4">
                                                         <div className="w-10 h-10 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-center">
                                                             <Zap className={cn(
@@ -293,7 +301,10 @@ export const AgentsDashboard = ({ analytics }: AgentsDashboardProps) => {
                                                                 audit.overall_score >= 80 ? "text-brand-green" : audit.overall_score >= 60 ? "text-brand-accent" : "text-brand-red"
                                                             )}>{audit.overall_score}%</p>
                                                         </div>
-                                                        <ChevronRight className="text-zinc-700 group-hover:text-brand-accent transition-colors" size={20} />
+                                                        <ChevronRight className={cn(
+                                                            "text-zinc-700 transition-colors",
+                                                            onAuditSelect ? "group-hover:text-brand-accent" : ""
+                                                        )} size={20} />
                                                     </div>
                                                 </div>
                                             ))}

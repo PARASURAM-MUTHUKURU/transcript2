@@ -1,4 +1,5 @@
 import React, { useState, memo } from 'react';
+import jsPDF from 'jspdf';
 import {
   FileText,
   Calendar,
@@ -50,6 +51,102 @@ export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
     );
   };
 
+  const generateReportContent = (formatToGenerate: string) => {
+    const isCsv = formatToGenerate === 'CSV' || formatToGenerate === 'Excel';
+    const isTxt = formatToGenerate === 'TXT';
+    let content = '';
+
+    if (isCsv) {
+      content += `"AuditAI Intelligence Report"\n`;
+      content += `"Report Type:","${reportType} Report"\n`;
+      content += `"Date Range:","${dateRange}"\n`;
+      content += `"Team:","${team}"\n`;
+      content += `"Generated:","${new Date().toLocaleString()}"\n`;
+      content += `"Metrics Included:","${selectedMetrics.join(', ')}"\n\n`;
+
+      if (selectedMetrics.includes('Agent Rankings')) {
+        content += '--- Agent Rankings ---\n';
+        content += 'ID,Name,Avg Score,Empathy,Resolution,Compliance,Total Audits\n';
+        if (analytics?.stats) {
+          const sortedAgents = [...analytics.stats].sort((a, b) => b.avg_score - a.avg_score);
+          sortedAgents.forEach(agent => {
+            content += `"${agent.agent_id}","${agent.agent_name}","${Math.round(agent.avg_score)}%","${Math.round(agent.avg_empathy)}%","${Math.round(agent.avg_resolution)}%","${Math.round(agent.avg_compliance)}%","${agent.total_audits}"\n`;
+          });
+        }
+        content += '\n';
+      }
+
+      if (selectedMetrics.includes('Quality Scores') || selectedMetrics.includes('Compliance Rate') || selectedMetrics.includes('Violation Details')) {
+        content += '--- Audit Log ---\n';
+        content += 'Audit ID,Date,Agent Name,Type,Overall Score,Empathy,Resolution,Compliance,Violations Count\n';
+
+        const sortedAudits = [...audits].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        sortedAudits.forEach(audit => {
+          content += `"${audit.id}","${new Date(audit.created_at).toLocaleDateString()}","${audit.agent_name}","${audit.type}","${audit.overall_score}%","${audit.empathy_score}%","${audit.resolution_score}%","${audit.compliance_score}%","${audit.violations?.length || 0}"\n`;
+        });
+        content += '\n';
+      }
+
+      if (selectedMetrics.includes('Trend Analysis')) {
+        content += '--- Trend Analysis ---\n';
+        content += 'Date,Avg Overall Score,Avg Empathy,Avg Resolution,Avg Compliance\n';
+        if (analytics?.trend) {
+          analytics.trend.forEach(t => {
+            content += `"${t.date}","${Math.round(t.avg_score)}%","${Math.round(t.avg_empathy)}%","${Math.round(t.avg_resolution)}%","${Math.round(t.avg_compliance)}%"\n`;
+          });
+        }
+        content += '\n';
+      }
+    } else {
+      if (isTxt) {
+        content += `=================================================================\n`;
+        content += `                   AuditAI Intelligence Report                   \n`;
+        content += `=================================================================\n`;
+        content += `Report Type  : ${reportType} Report\n`;
+        content += `Date Range   : ${dateRange}\n`;
+        content += `Team         : ${team}\n`;
+        content += `Generated At : ${new Date().toLocaleString()}\n`;
+        content += `Metrics      : ${selectedMetrics.join(', ')}\n`;
+        content += `=================================================================\n\n`;
+      }
+
+      if (selectedMetrics.includes('Agent Rankings') && analytics?.stats) {
+        content += `=== TOP AGENTS ===\n`;
+        const topAgents = [...analytics.stats].sort((a, b) => b.avg_score - a.avg_score);
+        topAgents.forEach(a => {
+          content += `${a.agent_name.padEnd(20)} | Score: ${Math.round(a.avg_score)}% | Empathy: ${Math.round(a.avg_empathy)}% | Res: ${Math.round(a.avg_resolution)}% | Audits: ${a.total_audits}\n`;
+        });
+        content += `\n`;
+      }
+
+      if (selectedMetrics.includes('Quality Scores') || selectedMetrics.includes('Compliance Rate') || selectedMetrics.includes('Violation Details')) {
+        content += `=== AUDIT LOG ===\n`;
+        const sortedAudits = [...audits].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        sortedAudits.forEach(audit => {
+          content += `[${new Date(audit.created_at).toLocaleDateString()}] ID: ${audit.id} | Agent: ${audit.agent_name.padEnd(15)} | Score: ${audit.overall_score.toString().padEnd(3)}% | Comp: ${audit.compliance_score}%\n`;
+          if (selectedMetrics.includes('Violation Details') && audit.violations && audit.violations.length > 0) {
+            content += `  Violations:\n`;
+            audit.violations.forEach(v => {
+              content += `    - [${v.severity}] ${v.type}: ${v.description}\n`;
+            });
+          }
+        });
+        content += `\n`;
+      }
+
+      if (selectedMetrics.includes('Trend Analysis') && analytics?.trend) {
+        content += `=== TREND ANALYSIS ===\n`;
+        analytics.trend.forEach(t => {
+          content += `Date: ${t.date.padEnd(12)} | Avg Score: ${Math.round(t.avg_score)}% | Compliance: ${Math.round(t.avg_compliance)}%\n`;
+        });
+        content += `\n`;
+      }
+    }
+
+    return content;
+  };
+
   const handleGenerateReport = async () => {
     if (selectedMetrics.length === 0) {
       showToast('Please select at least one metric.', 'error');
@@ -59,7 +156,7 @@ export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
     setIsGenerating(true);
     showToast('Generating report...', 'info');
 
-    // Simulate API call
+    // Simulate API call processing time
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     const newReport = {
@@ -74,17 +171,66 @@ export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
     setIsGenerating(false);
     showToast(`${reportType} report generated successfully!!`, 'success');
 
-    // Auto download
-    downloadReport(newReport.name, newReport.type);
+    // Auto download with dynamic content
+    const content = generateReportContent(format);
+    downloadReport(newReport.name, newReport.type, content);
   };
 
-  const downloadReport = (name: string, format: string) => {
-    const content = `AuditAI Generated Report\nName: ${name}\nFormat: ${format}\nDate: ${new Date().toLocaleString()}\n\nMetrics Included:\n${selectedMetrics.join('\n')}`;
-    const blob = new Blob([content], { type: 'text/plain' });
+  const downloadReport = (name: string, format: string, customContent?: string) => {
+    const isCsv = format === 'CSV' || format === 'Excel';
+    const isPdf = format === 'PDF';
+    const content = customContent || generateReportContent(format);
+
+    if (isPdf) {
+      const doc = new jsPDF();
+
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(30, 41, 59);
+      doc.text("AuditAI Intelligence Report", 105, 20, { align: "center" });
+
+      doc.setFontSize(10);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Report Type: ${reportType} Report`, 14, 32);
+      doc.text(`Date Range: ${dateRange}`, 14, 38);
+
+      doc.text(`Team: ${team}`, 120, 32);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 120, 38);
+
+      doc.text(`Metrics: ${selectedMetrics.join(', ')}`, 14, 44);
+
+      // Divider
+      doc.setDrawColor(203, 213, 225);
+      doc.line(14, 48, 196, 48);
+
+      // Body
+      doc.setFontSize(9);
+      doc.setFont('courier', 'normal'); // monospaced for text alignment
+      doc.setTextColor(51, 65, 85);
+
+      const lines = doc.splitTextToSize(content, 182);
+      let y = 56;
+      for (let i = 0; i < lines.length; i++) {
+        if (y > 280) {
+          y = 15;
+          doc.addPage();
+        }
+        doc.text(lines[i], 14, y);
+        y += 5; // Smaller line height
+      }
+      doc.save(`${name.replace(/\s+/g, '_')}.pdf`);
+      showToast(`Downloading PDF file...`, 'info');
+      return;
+    }
+
+    const mimeType = isCsv ? 'text/csv' : 'text/plain';
+    const extension = isCsv ? 'csv' : 'txt';
+
+    const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${name.replace(/\s+/g, '_')}.${format.toLowerCase()}`;
+    link.download = `${name.replace(/\s+/g, '_')}.${extension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -162,7 +308,7 @@ export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
                   label="FORMAT"
                   value={format}
                   onChange={setFormat}
-                  options={['PDF', 'Excel', 'CSV']}
+                  options={['PDF', 'Excel', 'CSV', 'TXT']}
                 />
               </div>
 

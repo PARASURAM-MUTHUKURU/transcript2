@@ -259,7 +259,16 @@ function AppContent() {
         ) : view === 'knowledge' ? (
           <RAGSearch />
         ) : view === 'agents' ? (
-          <AgentsDashboard analytics={analytics} />
+          <AgentsDashboard
+            analytics={analytics}
+            onAuditSelect={(auditId) => {
+              const audit = audits.find(a => a.id === auditId);
+              if (audit) {
+                setSelectedAudit(audit);
+                setView('audits');
+              }
+            }}
+          />
         ) : (
           <div className="flex-1 flex items-center justify-center text-zinc-500">
             <p className="font-display font-bold text-lg">Select a view to get started</p>
