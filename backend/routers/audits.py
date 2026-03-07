@@ -73,3 +73,18 @@ def create_audit(audit: AuditRequest):
         return {"id": last_id}
     finally:
         release_db_connection(conn)
+
+@router.delete("/{audit_id}")
+def delete_audit(audit_id: int):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("DELETE FROM audits WHERE id = %s RETURNING id", (audit_id,))
+        deleted = cursor.fetchone()
+        conn.commit()
+        cursor.close()
+        if deleted:
+            return {"success": True, "id": deleted['id']}
+        return {"success": False, "error": "Audit not found"}
+    finally:
+        release_db_connection(conn)

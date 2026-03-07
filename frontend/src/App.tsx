@@ -134,6 +134,26 @@ function AppContent() {
     }
   };
 
+  const handleDeleteAudit = async (auditId: number) => {
+    try {
+      const response = await fetch(`/api/audits/${auditId}`, { method: 'DELETE' });
+      if (response.ok) {
+        setAudits(prev => prev.filter(a => a.id !== auditId));
+        if (selectedAudit?.id === auditId) {
+          setSelectedAudit(null);
+        }
+        showToast('Audit deleted successfully', 'success');
+        // Refresh analytics as it might have changed
+        fetchData();
+      } else {
+        throw new Error('Failed to delete audit');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Error deleting audit', 'error');
+    }
+  };
+
 
   const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -220,6 +240,7 @@ function AppContent() {
               collapsed={sidebarCollapsed}
               setCollapsed={setSidebarCollapsed}
               loading={loading}
+              onDeleteAudit={handleDeleteAudit}
             />
 
             {/* Right Side: Information (Audit Details + Transcript) */}

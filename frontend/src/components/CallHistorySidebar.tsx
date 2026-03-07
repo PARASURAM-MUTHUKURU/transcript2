@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, MessageSquare, Phone, AlertCircle, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, MessageSquare, Phone, AlertCircle, Plus, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Audit } from '../types';
 import { AuditSkeleton } from './Skeleton';
@@ -12,6 +12,7 @@ interface CallHistorySidebarProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
   loading?: boolean;
+  onDeleteAudit?: (id: number) => void;
 }
 
 export const CallHistorySidebar = ({
@@ -21,7 +22,8 @@ export const CallHistorySidebar = ({
   setShowNewAuditModal,
   collapsed,
   setCollapsed,
-  loading = false
+  loading = false,
+  onDeleteAudit
 }: CallHistorySidebarProps) => {
   return (
     <aside className={cn(
@@ -85,7 +87,7 @@ export const CallHistorySidebar = ({
                   : "hover:bg-brand-card/50 border-transparent"
               )}
             >
-              <div className="flex justify-between items-start mb-2">
+              <div className="flex justify-between items-start mb-2 group-hover:pr-6 relative">
                 <div className="flex items-center gap-2">
                   <div className={cn(
                     "p-1.5 rounded-lg",
@@ -98,11 +100,28 @@ export const CallHistorySidebar = ({
                     <span className="text-[10px] text-zinc-500 font-medium">6m 14s</span>
                   </div>
                 </div>
-                <div className={cn(
-                  "px-2 py-0.5 rounded text-[10px] font-black",
-                  audit.overall_score > 80 ? "bg-brand-green/10 text-brand-green" : audit.overall_score > 60 ? "bg-brand-accent/10 text-brand-accent" : "bg-brand-red/10 text-brand-red"
-                )}>
-                  {audit.overall_score}%
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "px-2 py-0.5 rounded text-[10px] font-black",
+                    audit.overall_score > 80 ? "bg-brand-green/10 text-brand-green" : audit.overall_score > 60 ? "bg-brand-accent/10 text-brand-accent" : "bg-brand-red/10 text-brand-red"
+                  )}>
+                    {audit.overall_score}%
+                  </div>
+                  {onDeleteAudit && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const recordName = `${audit.agent_name}/#${audit.id + 4800}`;
+                        const userInput = window.prompt(`Type "${recordName}" to confirm deletion:`);
+                        if (userInput === recordName) {
+                          onDeleteAudit(audit.id);
+                        }
+                      }}
+                      className="absolute right-0 top-0 p-1 text-zinc-500 hover:text-brand-red opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
               <p className="text-xs text-zinc-400 font-semibold truncate mb-2">{audit.agent_name}</p>
