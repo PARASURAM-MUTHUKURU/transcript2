@@ -27,6 +27,31 @@
   --color-brand-border: #e2e8f0;
   --color-text-primary: #0f172a;
   --color-text-secondary: #475569;
+
+  /* Invert zinc colors for light mode to make text readable */
+  --color-zinc-100: #0f172a;
+  /* slate-900 */
+  --color-zinc-200: #1e293b;
+  /* slate-800 */
+  --color-zinc-300: #334155;
+  /* slate-700 */
+  --color-zinc-400: #475569;
+  /* slate-600 */
+  --color-zinc-500: #64748b;
+  /* slate-500 */
+  --color-zinc-600: #94a3b8;
+  /* slate-400 */
+  --color-zinc-700: #cbd5e1;
+  /* slate-300 */
+  --color-zinc-800: #e2e8f0;
+  /* slate-200 */
+  --color-zinc-900: #f8fafc;
+  /* slate-50 */
+  --color-zinc-950: #ffffff;
+  /* white */
+
+  /* also make white text slightly darker or adapt it */
+  --color-white: #0f172a;
 }
 
 @layer base {

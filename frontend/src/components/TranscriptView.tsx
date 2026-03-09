@@ -50,22 +50,22 @@ export const TranscriptView = ({ selectedAudit, onUploadClick }: TranscriptViewP
 
   return (
     <div className="flex-1 flex flex-col bg-brand-bg">
-      <div className="h-16 border-b border-brand-border flex items-center justify-between px-8 bg-brand-surface/20">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
+      <div className="h-16 border-b border-brand-border flex items-center justify-between px-4 md:px-8 bg-brand-surface/20 overflow-x-auto">
+        <div className="flex items-center gap-4 md:gap-6 shrink-0">
+          <div className="flex items-center gap-2 md:gap-3">
             <div className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
-            <h3 className="font-display font-bold text-lg">Call Transcript</h3>
+            <h3 className="font-display font-bold text-base md:text-lg whitespace-nowrap">Call Transcript</h3>
           </div>
 
           <button
             onClick={onUploadClick}
-            className="flex items-center gap-2 px-3 py-1.5 bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent rounded-lg border border-brand-accent/20 transition-all text-[10px] font-black uppercase tracking-widest"
+            className="flex items-center gap-2 px-3 py-1.5 bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent rounded-lg border border-brand-accent/20 transition-all text-[9px] md:text-[10px] font-black uppercase tracking-widest shrink-0"
           >
             <Upload size={12} />
-            Upload Audio
+            <span className="hidden sm:inline">Upload Audio</span>
           </button>
         </div>
-        <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+        <div className="hidden sm:flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 shrink-0 ml-4">
           <span className="flex items-center gap-1"><Clock size={12} /> {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           <span className="flex items-center gap-1"><Calendar size={12} /> {date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
         </div>

@@ -226,10 +226,10 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                         <div className="bg-brand-accent p-1.5 rounded-lg">
                             <ShieldCheck className="text-white" size={16} />
                         </div>
-                        <h1 className="font-display font-bold text-lg tracking-tight">AuditAI</h1>
+                        <h1 className="font-display font-bold text-lg tracking-tight">GenAI-Audit</h1>
                     </div>
                     <p className="text-zinc-600 text-xs font-medium">
-                        © 2026 GenAI Customer Support Quality Auditor. Built for Excellence.
+                        © 2026 GenAI-Audit. Built for Excellence.
                     </p>
                 </div>
             </footer>

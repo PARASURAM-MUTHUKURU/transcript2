@@ -10,7 +10,10 @@ import {
   FileAudio,
   Upload,
   Target,
-  BookOpen
+  BookOpen,
+  Plus,
+  Menu,
+  X
 } from 'lucide-react';
 import { auditTranscript, transcribeAudio } from './services/geminiService';
 import { Agent, Audit, Analytics } from './types';
@@ -45,8 +48,11 @@ export default function App() {
 
 function AppContent() {
   const { showToast } = useToast();
-  const [view, setView] = useState<'landing' | 'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge'>('landing');
+  const [view, setView] = useState<'landing' | 'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge'>(
+    () => (localStorage.getItem('appView') as any) || 'landing'
+  );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [audits, setAudits] = useState<Audit[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
@@ -64,6 +70,10 @@ function AppContent() {
     audioData: '',
     mimeType: ''
   });
+
+  useEffect(() => {
+    localStorage.setItem('appView', view);
+  }, [view]);
 
   useEffect(() => {
     fetchData();
@@ -186,7 +196,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-brand-bg font-sans text-zinc-100 flex flex-col">
+    <div className="min-h-screen bg-brand-bg font-sans text-text-primary flex flex-col">
       {/* Top Navigation */}
       <header className="h-16 border-b border-brand-border bg-brand-surface flex items-center justify-between px-6 sticky top-0 z-50">
         <div className="flex items-center gap-8">
@@ -194,7 +204,7 @@ function AppContent() {
             <div className="bg-brand-accent p-1.5 rounded-lg shadow-[0_0_15px_rgba(242,125,38,0.3)]">
               <ShieldCheck className="text-white" size={20} />
             </div>
-            <h1 className="font-display font-bold text-xl tracking-tight">AuditAI</h1>
+            <h1 className="font-display font-bold text-xl tracking-tight">GenAI-Audit</h1>
           </div>
 
           <nav className="hidden md:flex items-center gap-1">
@@ -210,19 +220,65 @@ function AppContent() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
-          <button className="relative p-2 text-zinc-400 hover:text-white transition-colors">
-            <Bell size={20} />
-            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-red text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-brand-surface">
-              3
-            </span>
+        <div className="flex items-center gap-2 md:gap-4">
+          <button
+            onClick={() => setShowNewAuditModal(true)}
+            className="px-3 md:px-4 py-2 bg-brand-accent text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-brand-accent/90 transition-all flex items-center gap-2"
+          >
+            <Plus size={16} />
+            <span className="hidden md:inline">New Audit</span>
           </button>
-          <ThemeToggle />
-          <div className="w-8 h-8 rounded-lg bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-bold text-xs">
-            SQ
+
+          <div className="hidden md:flex items-center gap-4">
+            <button className="relative p-2 text-zinc-400 hover:text-white transition-colors">
+              <Bell size={20} />
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-red text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-brand-surface">
+                3
+              </span>
+            </button>
+            <ThemeToggle />
+            <div className="w-8 h-8 rounded-lg bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-bold text-xs">
+              SQ
+            </div>
           </div>
+
+          <button
+            className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </header>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-40 bg-brand-bg/95 backdrop-blur-md pt-20 px-6 flex flex-col gap-6">
+          <nav className="flex flex-col gap-2">
+            {view !== 'landing' && (
+              <>
+                <NavItem icon={LayoutDashboard} label="Dashboard" active={view === 'dashboard'} onClick={() => { setView('dashboard'); setMobileMenuOpen(false); }} />
+                <NavItem icon={MessageSquare} label="Transcript Review" active={view === 'audits'} onClick={() => { setView('audits'); setMobileMenuOpen(false); }} />
+                <NavItem icon={BookOpen} label="Knowledge Base" active={view === 'knowledge'} onClick={() => { setView('knowledge'); setMobileMenuOpen(false); }} />
+                <NavItem icon={Users} label="Agents" active={view === 'agents'} onClick={() => { setView('agents'); setMobileMenuOpen(false); }} />
+                <NavItem icon={History} label="Reports" active={view === 'reports'} onClick={() => { setView('reports'); setMobileMenuOpen(false); }} />
+              </>
+            )}
+          </nav>
+          <div className="border-t border-brand-border pt-6 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-bold text-sm">
+                SQ
+              </div>
+              <div>
+                <p className="font-bold text-sm">Sarah QA</p>
+                <p className="text-xs text-zinc-500">Quality Manager</p>
+              </div>
+            </div>
+            <ThemeToggle />
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 flex overflow-hidden">
@@ -244,7 +300,7 @@ function AppContent() {
             />
 
             {/* Right Side: Information (Audit Details + Transcript) */}
-            <section className="flex-1 flex overflow-hidden">
+            <section className="flex-1 flex flex-col md:flex-row overflow-hidden">
               {selectedAudit ? (
                 <>
                   <AuditSidebar selectedAudit={selectedAudit} />

@@ -27,15 +27,23 @@ export const CallHistorySidebar = ({
 }: CallHistorySidebarProps) => {
   return (
     <aside className={cn(
-      "border-r border-brand-border bg-brand-surface flex flex-col transition-all duration-300 relative",
-      collapsed ? "w-16" : "w-80"
+      "border-r border-brand-border bg-brand-surface flex flex-col transition-all duration-300 z-30",
+      collapsed ? "hidden md:flex md:w-16 md:relative" : "absolute inset-0 md:relative w-full md:w-80"
     )}>
       {/* Toggle Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-brand-surface border border-brand-border rounded-full flex items-center justify-center text-zinc-400 hover:text-white z-10 shadow-lg"
+        className="absolute -right-3 top-20 w-6 h-6 bg-brand-surface border border-brand-border rounded-full hidden md:flex items-center justify-center text-zinc-400 hover:text-white z-10 shadow-lg"
       >
         {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+      </button>
+
+      {/* Mobile Close Button */}
+      <button
+        onClick={() => setCollapsed(true)}
+        className="absolute right-4 top-6 md:hidden text-zinc-400 hover:text-white"
+      >
+        <ChevronLeft size={24} />
       </button>
 
       <div className={cn("p-6 space-y-6 overflow-hidden", collapsed && "opacity-0 pointer-events-none")}>
@@ -79,7 +87,10 @@ export const CallHistorySidebar = ({
           audits.map(audit => (
             <button
               key={audit.id}
-              onClick={() => setSelectedAudit(audit)}
+              onClick={() => {
+                setSelectedAudit(audit);
+                if (window.innerWidth < 768) setCollapsed(true);
+              }}
               className={cn(
                 "w-full text-left p-4 rounded-2xl transition-all group relative border",
                 selectedAudit?.id === audit.id
@@ -142,7 +153,10 @@ export const CallHistorySidebar = ({
           {audits.map(audit => (
             <button
               key={audit.id}
-              onClick={() => setSelectedAudit(audit)}
+              onClick={() => {
+                setSelectedAudit(audit);
+                if (window.innerWidth < 768) setCollapsed(true);
+              }}
               className={cn(
                 "p-3 rounded-xl transition-all",
                 selectedAudit?.id === audit.id ? "bg-brand-accent text-white" : "text-zinc-500 hover:bg-brand-card"
@@ -154,18 +168,6 @@ export const CallHistorySidebar = ({
         </div>
       )}
 
-      <div className={cn("p-4 border-t border-brand-border", collapsed && "p-2")}>
-        <button
-          onClick={() => setShowNewAuditModal(true)}
-          className={cn(
-            "w-full bg-brand-accent text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-brand-accent/90 transition-all flex items-center justify-center gap-2",
-            collapsed ? "h-12 w-12 p-0" : "py-3"
-          )}
-        >
-          <Plus size={collapsed ? 20 : 16} />
-          {!collapsed && "New Audit"}
-        </button>
-      </div>
     </aside>
   );
 };

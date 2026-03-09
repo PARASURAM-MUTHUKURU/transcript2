@@ -5,6 +5,7 @@ import {
     TrendingUp,
     TrendingDown,
     ChevronRight,
+    ChevronLeft,
     Award,
     Clock,
     ShieldCheck,
@@ -75,9 +76,12 @@ export const AgentsDashboard = ({ analytics, onAuditSelect }: AgentsDashboardPro
     ] : [];
 
     return (
-        <div className="flex-1 overflow-hidden bg-brand-bg flex">
+        <div className="flex-1 overflow-hidden bg-brand-bg flex flex-col md:flex-row">
             {/* Left Sidebar: Agent List */}
-            <div className="w-80 border-r border-brand-border bg-brand-surface/20 flex flex-col">
+            <div className={cn(
+                "w-full md:w-80 border-b md:border-b-0 md:border-r border-brand-border bg-brand-surface/20 flex-col",
+                selectedAgentId ? "hidden md:flex" : "flex"
+            )}>
                 <div className="p-6 border-b border-brand-border space-y-4">
                     <h2 className="text-xl font-display font-black text-white">Agents</h2>
                     <div className="relative">
@@ -131,7 +135,10 @@ export const AgentsDashboard = ({ analytics, onAuditSelect }: AgentsDashboardPro
             </div>
 
             {/* Main Area: Detailed Analytics */}
-            <div className="flex-1 overflow-y-auto p-8 bg-brand-bg custom-scrollbar">
+            <div className={cn(
+                "flex-1 overflow-y-auto p-4 md:p-8 bg-brand-bg custom-scrollbar",
+                selectedAgentId ? "block" : "hidden md:block"
+            )}>
                 <AnimatePresence mode="wait">
                     {selectedAgentId ? (
                         <motion.div
@@ -166,8 +173,14 @@ export const AgentsDashboard = ({ analytics, onAuditSelect }: AgentsDashboardPro
                             ) : (
                                 <>
                                     {/* Header */}
-                                    <div className="flex items-end justify-between">
-                                        <div className="space-y-4">
+                                    <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+                                        <div className="space-y-4 w-full md:w-auto">
+                                            <button
+                                                className="md:hidden flex items-center gap-2 text-brand-accent font-bold text-sm mb-4"
+                                                onClick={() => setSelectedAgentId(null)}
+                                            >
+                                                <ChevronLeft size={16} /> Back to Agents
+                                            </button>
                                             <div className="flex items-center gap-4">
                                                 <div className="w-16 h-16 rounded-2xl bg-brand-accent/20 border-2 border-brand-accent/30 flex items-center justify-center text-2xl font-black text-brand-accent shadow-[0_0_20px_rgba(242,125,38,0.2)]">
                                                     {selectedAgent?.agent_name.split(' ').map(n => n[0]).join('')}
@@ -283,7 +296,7 @@ export const AgentsDashboard = ({ analytics, onAuditSelect }: AgentsDashboardPro
                                                     )}
                                                 >
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-center">
+                                                        <div className="w-10 h-10 shrink-0 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-center">
                                                             <Zap className={cn(
                                                                 audit.overall_score >= 80 ? "text-brand-green" : audit.overall_score >= 60 ? "text-brand-accent" : "text-brand-red"
                                                             )} size={18} />

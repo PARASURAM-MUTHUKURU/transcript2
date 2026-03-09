@@ -52,12 +52,12 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const audioSrc = selectedAudit.audio_data 
+  const audioSrc = selectedAudit.audio_data
     ? `data:${selectedAudit.mime_type || 'audio/mpeg'};base64,${selectedAudit.audio_data}`
     : null;
 
   return (
-    <div className="w-[400px] flex flex-col bg-brand-surface overflow-y-auto border-l border-brand-border">
+    <div className="w-full md:w-[400px] shrink-0 flex flex-col bg-brand-surface overflow-y-auto border-b md:border-b-0 md:border-l border-brand-border">
       {/* Audio Player Section */}
       <div className="p-8 border-b border-brand-border bg-brand-card/30">
         <div className="flex items-center justify-between mb-6">
@@ -70,7 +70,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
 
         <div className="bg-brand-bg border border-brand-border rounded-2xl p-6 space-y-6">
           {audioSrc && (
-            <audio 
+            <audio
               ref={audioRef}
               src={audioSrc}
               onTimeUpdate={handleTimeUpdate}
@@ -78,7 +78,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
               onEnded={() => setIsPlaying(false)}
             />
           )}
-          
+
           <div className="flex items-center justify-center gap-6">
             <div className="flex flex-col items-center gap-1">
               <button className="text-zinc-500 hover:text-white transition-colors">
@@ -86,7 +86,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
               </button>
               <span className="text-[8px] font-black uppercase text-zinc-600">Volume</span>
             </div>
-            <button 
+            <button
               onClick={togglePlay}
               disabled={!audioSrc}
               className={cn(
@@ -103,7 +103,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
               <span className="text-[8px] font-black uppercase text-zinc-600">Speed</span>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Waveform progress={currentTime / (duration || 1)} isPlaying={isPlaying} />
             <div className="flex justify-between text-[10px] font-mono text-zinc-500 px-1">
@@ -152,7 +152,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
               {selectedAudit.violations.length} Detected
             </span>
           </div>
-          
+
           <div className="space-y-3">
             {selectedAudit.violations.length > 0 ? (
               selectedAudit.violations.map((v, i) => (
@@ -160,7 +160,7 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
                   <div className="flex justify-between items-start mb-1">
                     <p className="text-xs font-bold text-zinc-200">{v.type}</p>
                     <span className={cn(
-                      "text-[8px] font-black uppercase px-1.5 py-0.5 rounded", 
+                      "text-[8px] font-black uppercase px-1.5 py-0.5 rounded",
                       v.severity === 'Critical' ? "bg-brand-red/10 text-brand-red" : "bg-brand-accent/10 text-brand-accent"
                     )}>
                       {v.severity}

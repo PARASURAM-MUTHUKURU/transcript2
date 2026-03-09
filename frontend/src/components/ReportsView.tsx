@@ -457,14 +457,14 @@ export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
         </div>
 
         {/* Dynamic Insight Section (reused with refinement) */}
-        <div className="bg-gradient-to-r from-brand-accent/20 to-brand-green/10 border border-brand-accent/20 p-10 rounded-[3rem] items-center">
-          <div className="flex items-center gap-6">
-            <div className="p-6 bg-brand-surface rounded-full shadow-2xl">
+        <div className="bg-gradient-to-r from-brand-accent/20 to-brand-green/10 border border-brand-accent/20 p-6 md:p-10 rounded-[3rem] items-center">
+          <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+            <div className="p-6 bg-brand-surface rounded-full shadow-2xl shrink-0">
               <FileCheck size={48} className="text-brand-accent" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-3xl font-display font-black text-white leading-tight">Automation Active</h3>
-              <p className="text-zinc-400 text-lg">Your reports are being automatically summarized by Gemini 1.5 Pro and delivered to your Slack channel.</p>
+              <h3 className="text-2xl md:text-3xl font-display font-black text-white leading-tight">Automation Active</h3>
+              <p className="text-zinc-400 text-sm md:text-lg">Your reports are being automatically summarized by Gemini 1.5 Pro and delivered to your Slack channel.</p>
             </div>
           </div>
         </div>
