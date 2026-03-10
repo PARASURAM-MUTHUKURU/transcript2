@@ -82,19 +82,50 @@ class TranscribeRequest(BaseModel):
 @async_exponential_backoff(max_retries=3)
 async def ai_transcribe_audio(request: TranscribeRequest):
     model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    import tempfile
     
     try:
-        response = client.models.generate_content(
-            model=model_name,
-            contents=[
-                genai.types.Part.from_bytes(
-                    data=base64.b64decode(request.base64_data),
-                    mime_type=request.mime_type
-                ),
-                genai.types.Part.from_text(text=TRANSCRIBE_DIARIZATION_PROMPT)
-            ]
-        )
-        return {"transcript": response.text}
+        data = base64.b64decode(request.base64_data)
+        
+        # Determine extension based on mime_type
+        ext = ".wav"
+        if "mpeg" in request.mime_type or "mp3" in request.mime_type:
+            ext = ".mp3"
+        elif "mp4" in request.mime_type or "m4a" in request.mime_type:
+            ext = ".m4a"
+        elif "ogg" in request.mime_type:
+            ext = ".ogg"
+            
+        with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as temp_audio:
+            temp_audio.write(data)
+            temp_path = temp_audio.name
+            
+        try:
+            # Upload file via File API to support larger files
+            uploaded_file = client.files.upload(file=temp_path, config={'mime_type': request.mime_type})
+            
+            response = client.models.generate_content(
+                model=model_name,
+                contents=[
+                    uploaded_file,
+                    TRANSCRIBE_DIARIZATION_PROMPT
+                ]
+            )
+            
+            # Clean up the uploaded file from Gemini
+            try:
+                client.files.delete(name=uploaded_file.name)
+            except Exception as cleanup_error:
+                print(f"Failed to delete file from Gemini: {cleanup_error}")
+                
+            return {"transcript": response.text}
+        except Exception as api_error:
+            print(f"Gemini API Error: {api_error}")
+            return {"error": f"API Error: {str(api_error)}"}
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                
     except Exception as e:
         print(f"Gemini Transcribe Error: {e}")
         return {"error": str(e)}
