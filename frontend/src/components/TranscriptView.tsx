@@ -1,14 +1,15 @@
 import React from 'react';
-import { Clock, Calendar, Flag, Upload } from 'lucide-react';
+import { Clock, Calendar, Flag, Upload, MessageSquare } from 'lucide-react';
 import { Audit } from '../types';
 import { cn } from '../lib/utils';
 
 interface TranscriptViewProps {
   selectedAudit: Audit;
   onUploadClick?: () => void;
+  userRole?: string;
 }
 
-export const TranscriptView = ({ selectedAudit, onUploadClick }: TranscriptViewProps) => {
+export const TranscriptView = ({ selectedAudit, onUploadClick, userRole }: TranscriptViewProps) => {
   const parseTranscript = (text: string) => {
     if (!text) return [];
 
@@ -57,13 +58,15 @@ export const TranscriptView = ({ selectedAudit, onUploadClick }: TranscriptViewP
             <h3 className="font-display font-bold text-base md:text-lg whitespace-nowrap">Call Transcript</h3>
           </div>
 
-          <button
-            onClick={onUploadClick}
-            className="flex items-center gap-2 px-3 py-1.5 bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent rounded-lg border border-brand-accent/20 transition-all text-[9px] md:text-[10px] font-black uppercase tracking-widest shrink-0"
-          >
-            <Upload size={12} />
-            <span className="hidden sm:inline">Upload Audio</span>
-          </button>
+          {userRole !== 'supervisor' && (
+            <button
+              onClick={onUploadClick}
+              className="flex items-center gap-2 px-3 py-1.5 bg-brand-accent/10 hover:bg-brand-accent/20 text-brand-accent rounded-lg border border-brand-accent/20 transition-all text-[9px] md:text-[10px] font-black uppercase tracking-widest shrink-0"
+            >
+              <Upload size={12} />
+              <span className="hidden sm:inline">Upload Audio</span>
+            </button>
+          )}
         </div>
         <div className="hidden sm:flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 shrink-0 ml-4">
           <span className="flex items-center gap-1"><Clock size={12} /> {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -108,6 +111,12 @@ export const TranscriptView = ({ selectedAudit, onUploadClick }: TranscriptViewP
                           <span className="font-black uppercase mr-1">[{v.type}]</span>
                           {v.description}
                         </div>
+                        {userRole === 'agent' && (
+                          <button title="Request Human Review" className="ml-auto flex items-center gap-1.5 px-2 py-1 bg-brand-surface/50 border border-brand-border rounded hover:bg-white/10 transition-colors text-zinc-400 hover:text-white shrink-0 mt-0.5">
+                            <MessageSquare size={10} />
+                            <span className="text-[8px] uppercase tracking-wider font-bold">Dispute</span>
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

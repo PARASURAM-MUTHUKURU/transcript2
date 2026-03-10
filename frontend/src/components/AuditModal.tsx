@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MoreHorizontal, Loader2, Upload } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -39,6 +39,12 @@ export const AuditModal = ({
   isTranscribing,
   isAuditing
 }: AuditModalProps) => {
+  useEffect(() => {
+    if (show && agents.length === 1 && !newAuditData.agentId) {
+      setNewAuditData(prev => ({ ...prev, agentId: String(agents[0].id) }));
+    }
+  }, [show, agents, newAuditData.agentId, setNewAuditData]);
+
   return (
     <AnimatePresence>
       {show && (
@@ -67,14 +73,20 @@ export const AuditModal = ({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Agent</label>
-                  <select
-                    value={newAuditData.agentId}
-                    onChange={(e) => setNewAuditData(prev => ({ ...prev, agentId: e.target.value }))}
-                    className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm outline-none focus:ring-1 focus:ring-brand-accent"
-                  >
-                    <option value="">Select Agent</option>
-                    {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                  </select>
+                  {agents.length === 1 ? (
+                    <div className="w-full bg-brand-bg/50 border border-brand-border rounded-xl p-3 text-sm text-zinc-300 font-bold capitalize">
+                      {agents[0].name}
+                    </div>
+                  ) : (
+                    <select
+                      value={newAuditData.agentId}
+                      onChange={(e) => setNewAuditData(prev => ({ ...prev, agentId: e.target.value }))}
+                      className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm outline-none focus:ring-1 focus:ring-brand-accent"
+                    >
+                      <option value="">Select Agent</option>
+                      {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Channel</label>

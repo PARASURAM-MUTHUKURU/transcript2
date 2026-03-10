@@ -7,13 +7,16 @@ import {
   Users,
   History,
   Bell,
+  Settings,
   FileAudio,
   Upload,
   Target,
   BookOpen,
   Plus,
   Menu,
-  X
+  X,
+  LogOut,
+  Loader2
 } from 'lucide-react';
 import { auditTranscript, transcribeAudio } from './services/geminiService';
 import { Agent, Audit, Analytics } from './types';
@@ -34,6 +37,12 @@ import { ThemeProvider, ThemeToggle } from './components/ThemeToggle';
 import { ToastProvider, useToast } from './components/Toasts';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
+import { LoginView } from './components/LoginView';
+import { AgentPortalView } from './components/AgentPortalView';
+import { SettingsView } from './components/SettingsView';
+import { supabase, initSupabase } from './lib/supabase';
+import type { Session } from '@supabase/supabase-js';
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -48,7 +57,9 @@ export default function App() {
 
 function AppContent() {
   const { showToast } = useToast();
-  const [view, setView] = useState<'landing' | 'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge'>(
+  const [session, setSession] = useState<Session | null>(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
+  const [view, setView] = useState<'landing' | 'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge' | 'settings' | 'login'>(
     () => (localStorage.getItem('appView') as any) || 'landing'
   );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -58,6 +69,51 @@ function AppContent() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [selectedAudit, setSelectedAudit] = useState<Audit | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const userRole = session?.user?.user_metadata?.role || 'supervisor';
+
+  const displayedAudits = React.useMemo(() => {
+    if (userRole === 'agent' && session?.user?.user_metadata?.name) {
+      const myName = session.user.user_metadata.name.toLowerCase();
+      return audits.filter(a => a.agent_name?.toLowerCase() === myName);
+    }
+    return audits;
+  }, [audits, session, userRole]);
+
+  const displayedAgents = React.useMemo(() => {
+    if (userRole === 'agent' && session?.user?.user_metadata?.name) {
+      const myName = session.user.user_metadata.name.toLowerCase();
+      return agents.filter(a => a.name.toLowerCase() === myName);
+    }
+    return agents;
+  }, [agents, session, userRole]);
+
+  // Auth Initialization
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const res = await fetch('/api/config');
+        if (!res.ok) throw new Error('Failed to load config from backend');
+        const config = await res.json();
+
+        initSupabase(config.supabaseUrl, config.supabaseAnonKey);
+
+        const { data: { session } } = await supabase!.auth.getSession();
+        setSession(session);
+
+        supabase!.auth.onAuthStateChange((_event, session) => {
+          setSession(session);
+        });
+      } catch (err) {
+        console.error("Failed to fetch auth config", err);
+        showToast("Failed to connect to authentication server", "error");
+      } finally {
+        setAuthInitialized(true);
+      }
+    };
+
+    initAuth();
+  }, [showToast]);
 
   // New Audit State
   const [isAuditing, setIsAuditing] = useState(false);
@@ -73,7 +129,10 @@ function AppContent() {
 
   useEffect(() => {
     localStorage.setItem('appView', view);
-  }, [view]);
+    if (session && view === 'login') {
+      setView('dashboard');
+    }
+  }, [view, session]);
 
   useEffect(() => {
     fetchData();
@@ -195,6 +254,22 @@ function AppContent() {
     }
   };
 
+  if (!authInitialized) {
+    return (
+      <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+        <Loader2 className="animate-spin text-brand-accent" size={48} />
+      </div>
+    );
+  }
+
+  if (!session) {
+    if (view !== 'login') {
+      // Show landing page by default for unauthenticated external visitors
+      return <LandingPage onGetStarted={() => setView('login')} />;
+    }
+    return <LoginView onBack={() => setView('landing')} />;
+  }
+
   return (
     <div className="min-h-screen bg-brand-bg font-sans text-text-primary flex flex-col">
       {/* Top Navigation */}
@@ -208,26 +283,35 @@ function AppContent() {
           </div>
 
           <nav className="hidden md:flex items-center gap-1">
-            {view !== 'landing' && (
+            {view !== 'landing' && userRole === 'supervisor' && (
               <>
                 <NavItem icon={LayoutDashboard} label="Dashboard" active={view === 'dashboard'} onClick={() => setView('dashboard')} />
                 <NavItem icon={MessageSquare} label="Transcript Review" active={view === 'audits'} onClick={() => setView('audits')} />
                 <NavItem icon={BookOpen} label="Knowledge Base" active={view === 'knowledge'} onClick={() => setView('knowledge')} />
                 <NavItem icon={Users} label="Agents" active={view === 'agents'} onClick={() => setView('agents')} />
                 <NavItem icon={History} label="Reports" active={view === 'reports'} onClick={() => setView('reports')} />
+                <NavItem icon={Settings} label="Settings" active={view === 'settings'} onClick={() => setView('settings')} />
+              </>
+            )}
+            {view !== 'landing' && userRole === 'agent' && (
+              <>
+                <NavItem icon={LayoutDashboard} label="My Dashboard" active={view === 'dashboard'} onClick={() => setView('dashboard')} />
+                <NavItem icon={MessageSquare} label="My Audits" active={view === 'audits'} onClick={() => setView('audits')} />
               </>
             )}
           </nav>
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
-          <button
-            onClick={() => setShowNewAuditModal(true)}
-            className="px-3 md:px-4 py-2 bg-brand-accent text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-brand-accent/90 transition-all flex items-center gap-2"
-          >
-            <Plus size={16} />
-            <span className="hidden md:inline">New Audit</span>
-          </button>
+          {userRole !== 'supervisor' && (
+            <button
+              onClick={() => setShowNewAuditModal(true)}
+              className="px-3 md:px-4 py-2 bg-brand-accent text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-brand-accent/90 transition-all flex items-center gap-2"
+            >
+              <Plus size={16} />
+              <span className="hidden md:inline">New Audit</span>
+            </button>
+          )}
 
           <div className="hidden md:flex items-center gap-4">
             <button className="relative p-2 text-zinc-400 hover:text-white transition-colors">
@@ -237,8 +321,17 @@ function AppContent() {
               </span>
             </button>
             <ThemeToggle />
-            <div className="w-8 h-8 rounded-lg bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-bold text-xs">
-              SQ
+            <div className="flex items-center gap-3 ml-2 pl-4 border-l border-brand-border">
+              <div className="w-8 h-8 rounded-lg bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-bold text-xs uppercase">
+                {session?.user?.user_metadata?.name?.substring(0, 2) || session?.user?.email?.substring(0, 2) || 'U'}
+              </div>
+              <div className="hidden lg:block text-sm">
+                <p className="font-bold truncate max-w-[120px] capitalize">{session?.user?.user_metadata?.name || session?.user?.email}</p>
+                <p className="text-xs text-zinc-500 capitalize">{userRole}</p>
+              </div>
+              <button onClick={() => supabase.auth.signOut()} className="p-2 text-zinc-400 hover:text-brand-red transition-colors ml-2" title="Logout">
+                <LogOut size={18} />
+              </button>
             </div>
           </div>
 
@@ -255,25 +348,35 @@ function AppContent() {
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 bg-brand-bg/95 backdrop-blur-md pt-20 px-6 flex flex-col gap-6">
           <nav className="flex flex-col gap-2">
-            {view !== 'landing' && (
+            {view !== 'landing' && userRole === 'supervisor' && (
               <>
                 <NavItem icon={LayoutDashboard} label="Dashboard" active={view === 'dashboard'} onClick={() => { setView('dashboard'); setMobileMenuOpen(false); }} />
                 <NavItem icon={MessageSquare} label="Transcript Review" active={view === 'audits'} onClick={() => { setView('audits'); setMobileMenuOpen(false); }} />
                 <NavItem icon={BookOpen} label="Knowledge Base" active={view === 'knowledge'} onClick={() => { setView('knowledge'); setMobileMenuOpen(false); }} />
                 <NavItem icon={Users} label="Agents" active={view === 'agents'} onClick={() => { setView('agents'); setMobileMenuOpen(false); }} />
                 <NavItem icon={History} label="Reports" active={view === 'reports'} onClick={() => { setView('reports'); setMobileMenuOpen(false); }} />
+                <NavItem icon={Settings} label="Settings" active={view === 'settings'} onClick={() => { setView('settings'); setMobileMenuOpen(false); }} />
+              </>
+            )}
+            {view !== 'landing' && userRole === 'agent' && (
+              <>
+                <NavItem icon={LayoutDashboard} label="My Dashboard" active={view === 'dashboard'} onClick={() => { setView('dashboard'); setMobileMenuOpen(false); }} />
+                <NavItem icon={MessageSquare} label="My Audits" active={view === 'audits'} onClick={() => { setView('audits'); setMobileMenuOpen(false); }} />
               </>
             )}
           </nav>
           <div className="border-t border-brand-border pt-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-bold text-sm">
-                SQ
+              <div className="w-10 h-10 rounded-xl bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-bold text-sm uppercase">
+                {session?.user?.user_metadata?.name?.substring(0, 2) || session?.user?.email?.substring(0, 2) || 'U'}
               </div>
-              <div>
-                <p className="font-bold text-sm">Sarah QA</p>
-                <p className="text-xs text-zinc-500">Quality Manager</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm truncate capitalize">{session?.user?.user_metadata?.name || session?.user?.email}</p>
+                <p className="text-xs text-zinc-500 capitalize">{userRole}</p>
               </div>
+              <button onClick={() => supabase.auth.signOut()} className="p-2 text-brand-red/80 hover:text-brand-red transition-colors" title="Logout">
+                <LogOut size={20} />
+              </button>
             </div>
             <ThemeToggle />
           </div>
@@ -282,14 +385,14 @@ function AppContent() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex overflow-hidden">
-        {view === 'landing' ? (
-          <LandingPage onGetStarted={() => setView('audits')} />
+        {view === 'landing' || view === 'login' ? (
+          <LandingPage onGetStarted={() => setView('dashboard')} />
         ) : view === 'dashboard' ? (
-          <DashboardView analytics={analytics} audits={audits} />
+          userRole === 'agent' ? <AgentPortalView audits={displayedAudits} agentEmail={session?.user?.email} /> : <DashboardView analytics={analytics} audits={audits} />
         ) : view === 'audits' ? (
           <>
             <CallHistorySidebar
-              audits={audits}
+              audits={displayedAudits}
               selectedAudit={selectedAudit}
               setSelectedAudit={setSelectedAudit}
               setShowNewAuditModal={setShowNewAuditModal}
@@ -307,6 +410,7 @@ function AppContent() {
                   <TranscriptView
                     selectedAudit={selectedAudit}
                     onUploadClick={() => setShowNewAuditModal(true)}
+                    userRole={userRole}
                   />
                 </>
               ) : (
@@ -346,6 +450,8 @@ function AppContent() {
               }
             }}
           />
+        ) : view === 'settings' && userRole === 'supervisor' ? (
+          <SettingsView onNewAuditClick={() => setShowNewAuditModal(true)} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-zinc-500">
             <p className="font-display font-bold text-lg">Select a view to get started</p>
@@ -354,7 +460,7 @@ function AppContent() {
       </main>      <AuditModal
         show={showNewAuditModal}
         onClose={() => setShowNewAuditModal(false)}
-        agents={agents}
+        agents={displayedAgents}
         newAuditData={newAuditData}
         setNewAuditData={setNewAuditData}
         handleAudioUpload={handleAudioUpload}

@@ -9,3 +9,4 @@ venv/
 auditor_db/
 temp_ingest/
 __pycache__
+customer_support_conversations.txt

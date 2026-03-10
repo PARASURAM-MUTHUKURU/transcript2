@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import agents, audits, analytics, ai, rag
+from routers import agents, audits, analytics, ai, rag, config
 
 app = FastAPI()
 
@@ -19,6 +19,7 @@ app.include_router(audits.router)
 app.include_router(analytics.router)
 app.include_router(ai.router)
 app.include_router(rag.router)
+app.include_router(config.router)
 
 if __name__ == "__main__":
     import uvicorn

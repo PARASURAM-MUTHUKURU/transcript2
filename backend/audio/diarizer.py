@@ -1,6 +1,6 @@
 import numpy as np
 import librosa
-from sklearn.cluster import KMeans
+from sklearn.cluster import AgglomerativeClustering
 from pydub import AudioSegment
 import speech_recognition as sr
 
@@ -23,15 +23,23 @@ def process_mono_diarization(audio_file_path: str, num_speakers: int = 2):
     # Extract Mel-frequency cepstral coefficients (MFCCs)
     # These represent the short-term power spectrum of a sound (vocal signature)
     mfccs = librosa.feature.mfcc(y=y, sr=sr_lib, n_mfcc=20, hop_length=512)
-    mfccs = mfccs.T # Shape: (time_frames, n_mfcc)
+    
+    # ENHANCEMENT: Add Delta and Delta-Delta features for capturing dynamic speech patterns
+    delta_mfcc = librosa.feature.delta(mfccs)
+    delta2_mfcc = librosa.feature.delta(mfccs, order=2)
+    
+    # Combined features
+    combined_features = np.vstack([mfccs, delta_mfcc, delta2_mfcc])
+    features = combined_features.T # Shape: (time_frames, n_features)
     
     # Standardize features
-    mfccs = (mfccs - np.mean(mfccs, axis=0)) / np.std(mfccs, axis=0)
+    features = (features - np.mean(features, axis=0)) / np.std(features, axis=0)
     
-    # 2. Clustering (KMeans)
-    print(f"Clustering into {num_speakers} speakers using KMeans...")
-    kmeans = KMeans(n_clusters=num_speakers, random_state=42, n_init=10)
-    labels = kmeans.fit_predict(mfccs)
+    # 2. Clustering (Agglomerative)
+    # Hierarchical clustering is generally more robust for speaker diarization than KMeans
+    print(f"Clustering into {num_speakers} speakers using Agglomerative Clustering...")
+    clustering_model = AgglomerativeClustering(n_clusters=num_speakers)
+    labels = clustering_model.fit_predict(features)
     
     # 3. Segmentation Mapping
     # Map the frame-level labels back to time segments
