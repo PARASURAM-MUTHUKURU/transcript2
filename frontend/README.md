@@ -1,20 +1,67 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# AuditAI: Dashboard & Agent Portal 🎨
 
-# Run and deploy your AI Studio app
+The AuditAI frontend is a modern, high-performance React application designed to provide supervisors and agents with real-time insights into customer support quality.
 
-This contains everything you need to run your app locally.
+## 🌟 Key Views
 
-View your app in AI Studio: https://ai.studio/apps/90e95949-8c5b-4dc9-a5b1-ad327e591e4b
+### 1. Dashboard View (`src/components/DashboardView.tsx`)
+- High-level overview of auditing performance.
+- Interactive charts showing compliance trends and agent scores.
+- Real-time alerts for critical violations.
 
-## Run Locally
+### 2. Reports View (`src/components/ReportsView.tsx`)
+- Detailed list of all audit records.
+- Filtering by date, agent, and compliance status.
+- **PDF Export**: Generate professional audit reports directly from the browser.
 
-**Prerequisites:**  Node.js
+### 3. Agent Portal (`src/components/AgentPortalView.tsx`)
+- Personalized view for support agents.
+- Track individual performance metrics and feedback.
+- Access to historical audit results for self-improvement.
 
+### 4. Interactive Bot Simulation (`src/components/LiveAuditView.tsx`)
+- Test and train agents using an AI-simulated customer.
+- Real-time transcription and scoring of the interaction.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+## 🛠️ Tech Stack
+
+- **React 19**: Leveraging React Server Components (where applicable) and modern hooks.
+- **Vite**: Ultra-fast build tool and development server.
+- **Tailwind CSS**: For a sleek, responsive, and maintainable design system.
+- **Framer Motion**: Smooth transitions and micro-interactions for a premium feel.
+- **Recharts**: Data-driven visualizations for analytics.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Backend API running (see root README)
+
+### Installation
+1.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+2.  **Environment Setup**:
+    Create a `.env.local` file in the `frontend/` directory:
+    ```bash
+    VITE_API_BASE_URL="http://localhost:3000"
+    VITE_GEMINI_API_KEY="your_gemini_key"
+    ```
+3.  **Run Development Server**:
+    ```bash
+    npm run dev:client
+    ```
+
+---
+
+## 📁 Folder Structure
+
+- `src/components/`: Reusable UI components and major page views.
+- `src/services/`: API integration and Gemini LLM orchestration.
+- `src/hooks/`: Custom React hooks for state management and side effects.
+- `src/assets/`: Static assets and global styles.
