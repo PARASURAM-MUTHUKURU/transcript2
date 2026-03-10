@@ -9,3 +9,6 @@ google-genai
 fpdf2
 pandas
 openpyxl
+numpy
+librosa
+scikit-learn

@@ -183,44 +183,9 @@ export const ReportsView = memo(({ analytics, audits, userRole = 'supervisor' }:
     const content = customContent || generateReportContent(format);
 
     if (isPdf) {
-      const doc = new jsPDF();
-
-      // Header
-      doc.setFontSize(22);
-      doc.setTextColor(30, 41, 59);
-      doc.text("AuditAI Intelligence Report", 105, 20, { align: "center" });
-
-      doc.setFontSize(10);
-      doc.setTextColor(71, 85, 105);
-      doc.text(`Report Type: ${reportType} Report`, 14, 32);
-      doc.text(`Date Range: ${dateRange}`, 14, 38);
-
-      doc.text(`Team: ${team}`, 120, 32);
-      doc.text(`Generated: ${new Date().toLocaleString()}`, 120, 38);
-
-      doc.text(`Metrics: ${selectedMetrics.join(', ')}`, 14, 44);
-
-      // Divider
-      doc.setDrawColor(203, 213, 225);
-      doc.line(14, 48, 196, 48);
-
-      // Body
-      doc.setFontSize(9);
-      doc.setFont('courier', 'normal'); // monospaced for text alignment
-      doc.setTextColor(51, 65, 85);
-
-      const lines = doc.splitTextToSize(content, 182);
-      let y = 56;
-      for (let i = 0; i < lines.length; i++) {
-        if (y > 280) {
-          y = 15;
-          doc.addPage();
-        }
-        doc.text(lines[i], 14, y);
-        y += 5; // Smaller line height
-      }
-      doc.save(`${name.replace(/\s+/g, '_')}.pdf`);
-      showToast(`Downloading PDF file...`, 'info');
+      const metricsParam = selectedMetrics.join(',');
+      window.open(`/api/reports/export/summary?metrics=${encodeURIComponent(metricsParam)}`, '_blank');
+      showToast('Exporting Summary Report...', 'info');
       return;
     }
 
