@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Clock, Play, Pause, Settings, TrendingUp, Volume2 } from 'lucide-react';
+import { Clock, Play, Pause, Settings, TrendingUp, Volume2, FileText } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Audit } from '../types';
 import { ScoreBar } from './ScoreBar';
@@ -7,9 +7,10 @@ import { Waveform } from './Waveform';
 
 interface AuditSidebarProps {
   selectedAudit: Audit;
+  userRole?: string;
 }
 
-export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
+export const AuditSidebar = ({ selectedAudit, userRole = 'supervisor' }: AuditSidebarProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -128,6 +129,16 @@ export const AuditSidebar = ({ selectedAudit }: AuditSidebarProps) => {
             {selectedAudit.overall_score}
           </div>
         </div>
+
+        {userRole !== 'agent' && (
+          <button
+            onClick={() => window.open(`/api/reports/export/pdf/${selectedAudit.id}`, '_blank')}
+            className="w-full py-4 bg-brand-surface border border-brand-border rounded-2xl flex items-center justify-center gap-3 text-xs font-bold uppercase tracking-widest hover:border-brand-accent hover:text-brand-accent transition-all group"
+          >
+            <FileText size={18} className="text-zinc-500 group-hover:text-brand-accent transition-colors" />
+            Export Detailed PDF
+          </button>
+        )}
 
         <div className="space-y-6">
           <div className="flex justify-between items-center">

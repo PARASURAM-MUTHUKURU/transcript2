@@ -6,3 +6,6 @@ SpeechRecognition
 python-multipart
 psycopg2-binary
 google-genai
+fpdf2
+pandas
+openpyxl

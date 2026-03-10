@@ -16,7 +16,8 @@ import {
   Menu,
   X,
   LogOut,
-  Loader2
+  Loader2,
+  ShieldAlert
 } from 'lucide-react';
 import { auditTranscript, transcribeAudio } from './services/geminiService';
 import { Agent, Audit, Analytics } from './types';
@@ -28,7 +29,7 @@ import { AuditSidebar } from './components/AuditSidebar';
 import { TranscriptView } from './components/TranscriptView';
 import { AuditModal } from './components/AuditModal';
 import { ReportsView } from './components/ReportsView';
-// import { PolicyView } from './components/PolicyView';
+import { AlertsView } from './components/AlertsView';
 import { RAGSearch } from './components/RAGSearch';
 import { AgentsDashboard } from './components/AgentsDashboard';
 import { LandingPage } from './components/LandingPage';
@@ -59,7 +60,7 @@ function AppContent() {
   const { showToast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
-  const [view, setView] = useState<'landing' | 'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge' | 'settings' | 'login'>(
+  const [view, setView] = useState<'landing' | 'dashboard' | 'audits' | 'agents' | 'reports' | 'knowledge' | 'settings' | 'login' | 'alerts'>(
     () => (localStorage.getItem('appView') as any) || 'landing'
   );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -68,6 +69,7 @@ function AppContent() {
   const [audits, setAudits] = useState<Audit[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [selectedAudit, setSelectedAudit] = useState<Audit | null>(null);
+  const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const userRole = session?.user?.user_metadata?.role || 'supervisor';
@@ -141,14 +143,17 @@ function AppContent() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [agentsRes, auditsRes, analyticsRes] = await Promise.all([
+      const [agentsRes, auditsRes, analyticsRes, alertsRes] = await Promise.all([
         fetch('/api/agents'),
         fetch('/api/audits'),
-        fetch('/api/analytics')
+        fetch('/api/analytics'),
+        fetch('/api/alerts?resolved=false')
       ]);
+
       const agentsData = await agentsRes.json();
       const auditsData = await auditsRes.json();
       const analyticsData = await analyticsRes.json();
+      const alertsData = await alertsRes.json();
 
       const parsedAudits = auditsData.map((a: any) => ({
         ...a,
@@ -158,6 +163,7 @@ function AppContent() {
       setAgents(agentsData);
       setAudits(parsedAudits);
       setAnalytics(analyticsData);
+      setAlerts(alertsData);
 
       if (parsedAudits.length > 0 && !selectedAudit) {
         setSelectedAudit(parsedAudits[0]);
@@ -286,6 +292,7 @@ function AppContent() {
             {view !== 'landing' && userRole === 'supervisor' && (
               <>
                 <NavItem icon={LayoutDashboard} label="Dashboard" active={view === 'dashboard'} onClick={() => setView('dashboard')} />
+                <NavItem icon={ShieldAlert} label="Alerts" active={view === 'alerts'} onClick={() => setView('alerts')} />
                 <NavItem icon={MessageSquare} label="Transcript Review" active={view === 'audits'} onClick={() => setView('audits')} />
                 <NavItem icon={BookOpen} label="Knowledge Base" active={view === 'knowledge'} onClick={() => setView('knowledge')} />
                 <NavItem icon={Users} label="Agents" active={view === 'agents'} onClick={() => setView('agents')} />
@@ -314,11 +321,16 @@ function AppContent() {
           )}
 
           <div className="hidden md:flex items-center gap-4">
-            <button className="relative p-2 text-zinc-400 hover:text-white transition-colors">
+            <button
+              onClick={() => setView('alerts')}
+              className="relative p-2 text-zinc-400 hover:text-white transition-colors"
+            >
               <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-red text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-brand-surface">
-                3
-              </span>
+              {alerts.length > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-red text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-brand-surface">
+                  {alerts.length}
+                </span>
+              )}
             </button>
             <ThemeToggle />
             <div className="flex items-center gap-3 ml-2 pl-4 border-l border-brand-border">
@@ -351,6 +363,7 @@ function AppContent() {
             {view !== 'landing' && userRole === 'supervisor' && (
               <>
                 <NavItem icon={LayoutDashboard} label="Dashboard" active={view === 'dashboard'} onClick={() => { setView('dashboard'); setMobileMenuOpen(false); }} />
+                <NavItem icon={ShieldAlert} label="Alerts" active={view === 'alerts'} onClick={() => { setView('alerts'); setMobileMenuOpen(false); }} />
                 <NavItem icon={MessageSquare} label="Transcript Review" active={view === 'audits'} onClick={() => { setView('audits'); setMobileMenuOpen(false); }} />
                 <NavItem icon={BookOpen} label="Knowledge Base" active={view === 'knowledge'} onClick={() => { setView('knowledge'); setMobileMenuOpen(false); }} />
                 <NavItem icon={Users} label="Agents" active={view === 'agents'} onClick={() => { setView('agents'); setMobileMenuOpen(false); }} />
@@ -406,7 +419,7 @@ function AppContent() {
             <section className="flex-1 flex flex-col md:flex-row overflow-hidden">
               {selectedAudit ? (
                 <>
-                  <AuditSidebar selectedAudit={selectedAudit} />
+                  <AuditSidebar selectedAudit={selectedAudit} userRole={userRole} />
                   <TranscriptView
                     selectedAudit={selectedAudit}
                     onUploadClick={() => setShowNewAuditModal(true)}
@@ -436,12 +449,22 @@ function AppContent() {
             </section>
           </>
         ) : view === 'reports' ? (
-          <ReportsView analytics={analytics} audits={audits} />
+          <ReportsView analytics={analytics} audits={audits} userRole={userRole} />
         ) : view === 'knowledge' ? (
           <RAGSearch />
         ) : view === 'agents' ? (
           <AgentsDashboard
             analytics={analytics}
+            onAuditSelect={(auditId) => {
+              const audit = audits.find(a => a.id === auditId);
+              if (audit) {
+                setSelectedAudit(audit);
+                setView('audits');
+              }
+            }}
+          />
+        ) : view === 'alerts' ? (
+          <AlertsView
             onAuditSelect={(auditId) => {
               const audit = audits.find(a => a.id === auditId);
               if (audit) {

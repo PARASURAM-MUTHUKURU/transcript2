@@ -23,9 +23,10 @@ import { useToast } from './Toasts';
 interface ReportsViewProps {
   analytics: Analytics | null;
   audits: Audit[];
+  userRole?: string;
 }
 
-export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
+export const ReportsView = memo(({ analytics, audits, userRole = 'supervisor' }: ReportsViewProps) => {
   const { showToast } = useToast();
   const [reportType, setReportType] = useState('Performance');
   const [dateRange, setDateRange] = useState('This Week');
@@ -223,6 +224,17 @@ export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
       return;
     }
 
+    if (format === 'Detailed PDF (Backend)') {
+      // Assuming we take the most recent audit for the "detailed" version in this specific builder
+      if (audits.length > 0) {
+        window.open(`/api/reports/export/pdf/${audits[0].id}`, '_blank');
+        showToast('Exporting Detailed PDF...', 'info');
+      } else {
+        showToast('No audits found for detailed report.', 'error');
+      }
+      return;
+    }
+
     const mimeType = isCsv ? 'text/csv' : 'text/plain';
     const extension = isCsv ? 'csv' : 'txt';
 
@@ -308,7 +320,10 @@ export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
                   label="FORMAT"
                   value={format}
                   onChange={setFormat}
-                  options={['PDF', 'Excel', 'CSV', 'TXT']}
+                  options={userRole === 'agent'
+                    ? ['PDF', 'Excel', 'CSV', 'TXT']
+                    : ['PDF', 'Excel', 'CSV', 'TXT', 'Detailed PDF (Backend)']
+                  }
                 />
               </div>
 
@@ -418,6 +433,29 @@ export const ReportsView = memo(({ analytics, audits }: ReportsViewProps) => {
                 View All History
               </button>
             </div>
+
+            {userRole !== 'agent' && (
+              <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] space-y-6">
+                <h3 className="text-xl font-display font-bold">Recent Audits</h3>
+                <div className="space-y-3">
+                  {audits.slice(0, 5).map(audit => (
+                    <div key={audit.id} className="flex items-center justify-between p-4 bg-brand-bg/50 border border-brand-border rounded-2xl">
+                      <div className="flex flex-col">
+                        <p className="text-sm font-bold text-zinc-200">Audit #{audit.id}</p>
+                        <p className="text-[10px] text-zinc-500 font-black uppercase">{audit.agent_name}</p>
+                      </div>
+                      <button
+                        onClick={() => window.open(`/api/reports/export/pdf/${audit.id}`, '_blank')}
+                        className="p-2 hover:bg-brand-accent/10 rounded-xl transition-colors text-zinc-500 hover:text-brand-accent"
+                        title="Download Detailed PDF"
+                      >
+                        <Download size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Scheduled Tasks */}
             <div className="bg-brand-surface/40 backdrop-blur-md border border-brand-border p-8 rounded-[2.5rem] space-y-6">

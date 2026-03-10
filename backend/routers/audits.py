@@ -69,6 +69,21 @@ def create_audit(audit: AuditRequest):
         ))
         last_id = cursor.fetchone()['id']
         conn.commit()
+        # Alert Triggering Logic
+        is_critical = any(v.get('severity') in ['Critical', 'High'] for v in audit.violations)
+        is_low_compliance = audit.compliance_score < 70
+        
+        if is_critical or is_low_compliance:
+            alert_type = "Compliance Violation" if is_critical else "Low Compliance Score"
+            alert_desc = f"Critical violations detected in audit #{last_id}" if is_critical else f"Audit #{last_id} has a low compliance score of {audit.compliance_score}%"
+            alert_severity = "Critical" if (is_critical and any(v.get('severity') == 'Critical' for v in audit.violations)) else "High"
+            
+            cursor.execute("""
+                INSERT INTO alerts (audit_id, type, description, severity)
+                VALUES (%s, %s, %s, %s)
+            """, (last_id, alert_type, alert_desc, alert_severity))
+            conn.commit()
+
         cursor.close()
         return {"id": last_id}
     finally:
