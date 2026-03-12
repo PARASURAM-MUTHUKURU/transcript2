@@ -32,6 +32,7 @@ import {
 import { Analytics, AgentAnalytics } from '../types';
 import { cn } from '../lib/utils';
 import { AgentSkeleton, AuditSkeleton, Skeleton } from './Skeleton';
+import { getApiUrl } from '../lib/api';
 
 interface AgentsDashboardProps {
     analytics: Analytics | null;
@@ -53,7 +54,7 @@ export const AgentsDashboard = ({ analytics, onAuditSelect }: AgentsDashboardPro
     const fetchAgentDetails = async (id: number) => {
         setLoadingDetails(true);
         try {
-            const res = await fetch(`/api/agents/${id}/analytics`);
+            const res = await fetch(getApiUrl(`/api/agents/${id}/analytics`));
             const data = await res.json();
             setAgentDetails(data);
         } catch (error) {

@@ -37,6 +37,7 @@ import { DashboardView } from './components/DashboardView';
 import { ThemeProvider, ThemeToggle } from './components/ThemeToggle';
 import { ToastProvider, useToast } from './components/Toasts';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { getApiUrl } from './lib/api';
 
 import { LoginView } from './components/LoginView';
 import { AgentPortalView } from './components/AgentPortalView';
@@ -94,21 +95,26 @@ function AppContent() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const res = await fetch('/api/config');
+        const res = await fetch(getApiUrl('/api/config'));
         if (!res.ok) throw new Error('Failed to load config from backend');
         const config = await res.json();
 
-        initSupabase(config.supabaseUrl, config.supabaseAnonKey);
+        if (config.supabaseUrl && config.supabaseAnonKey) {
+          const client = initSupabase(config.supabaseUrl, config.supabaseAnonKey);
+          if (client) {
+            const { data: { session } } = await client.auth.getSession();
+            setSession(session);
 
-        const { data: { session } } = await supabase!.auth.getSession();
-        setSession(session);
-
-        supabase!.auth.onAuthStateChange((_event, session) => {
-          setSession(session);
-        });
+            client.auth.onAuthStateChange((_event, session) => {
+              setSession(session);
+            });
+          }
+        } else {
+          throw new Error('Supabase configuration is missing in backend response');
+        }
       } catch (err) {
         console.error("Failed to fetch auth config", err);
-        showToast("Failed to connect to authentication server", "error");
+        showToast("Authentication server unavailable. Please ensure backend is running.", "error");
       } finally {
         setAuthInitialized(true);
       }
@@ -144,10 +150,10 @@ function AppContent() {
     setLoading(true);
     try {
       const [agentsRes, auditsRes, analyticsRes, alertsRes] = await Promise.all([
-        fetch('/api/agents'),
-        fetch('/api/audits'),
-        fetch('/api/analytics'),
-        fetch('/api/alerts?resolved=false')
+        fetch(getApiUrl('/api/agents')),
+        fetch(getApiUrl('/api/audits')),
+        fetch(getApiUrl('/api/analytics')),
+        fetch(getApiUrl('/api/alerts?resolved=false'))
       ]);
 
       const agentsData = await agentsRes.json();
@@ -190,7 +196,7 @@ function AppContent() {
         suggestions: result.suggestions
       };
 
-      const saveRes = await fetch('/api/audits', {
+      const saveRes = await fetch(getApiUrl('/api/audits'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(auditPayload)
@@ -211,7 +217,7 @@ function AppContent() {
 
   const handleDeleteAudit = async (auditId: number) => {
     try {
-      const response = await fetch(`/api/audits/${auditId}`, { method: 'DELETE' });
+      const response = await fetch(getApiUrl(`/api/audits/${auditId}`), { method: 'DELETE' });
       if (response.ok) {
         setAudits(prev => prev.filter(a => a.id !== auditId));
         if (selectedAudit?.id === auditId) {

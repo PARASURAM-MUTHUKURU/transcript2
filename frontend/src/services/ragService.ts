@@ -1,3 +1,5 @@
+import { getApiUrl } from '../lib/api';
+
 export interface RAGSource {
     source: string;
     chunks_count: number;
@@ -10,7 +12,7 @@ export interface RAGQueryResponse {
 }
 
 export async function queryRAG(question: string): Promise<RAGQueryResponse> {
-    const response = await fetch('/api/rag/query', {
+    const response = await fetch(getApiUrl('/api/rag/query'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question }),
@@ -23,7 +25,7 @@ export async function ingestFile(file: File): Promise<{ status: string; filename
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/rag/ingest', {
+    const response = await fetch(getApiUrl('/api/rag/ingest'), {
         method: 'POST',
         body: formData,
     });

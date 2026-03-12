@@ -17,6 +17,9 @@ export function LoginView({ onBack }: LoginViewProps) {
         setLoading(true);
         setError(null);
         try {
+            if (!supabase) {
+                throw new Error('Authentication client not initialized. Please refresh the page or check your connection.');
+            }
             const { error } = await supabase.auth.signInWithPassword({
                 email,
                 password,

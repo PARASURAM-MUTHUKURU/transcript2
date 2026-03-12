@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useToast } from './Toasts';
+import { getApiUrl } from '../lib/api';
 
 interface Alert {
     id: number;
@@ -40,7 +41,7 @@ export const AlertsView = ({ onAuditSelect }: AlertsViewProps) => {
         setLoading(true);
         try {
             const resolvedParam = filter === 'all' ? '' : `?resolved=${filter === 'resolved'}`;
-            const response = await fetch(`/api/alerts${resolvedParam}`);
+            const response = await fetch(getApiUrl(`/api/alerts${resolvedParam}`));
             if (!response.ok) throw new Error('Failed to fetch alerts');
             const data = await response.json();
             setAlerts(data);
@@ -54,7 +55,7 @@ export const AlertsView = ({ onAuditSelect }: AlertsViewProps) => {
 
     const handleResolve = async (id: number) => {
         try {
-            const response = await fetch(`/api/alerts/${id}/resolve`, { method: 'PATCH' });
+            const response = await fetch(getApiUrl(`/api/alerts/${id}/resolve`), { method: 'PATCH' });
             if (response.ok) {
                 showToast('Alert resolved', 'success');
                 fetchAlerts();

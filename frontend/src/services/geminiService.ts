@@ -14,11 +14,10 @@ export interface AuditResult {
   suggestions: string;
 }
 
-// Proxied through our Python backend for security
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { getApiUrl } from '../lib/api';
 
 export async function auditTranscript(transcript: string, type: 'chat' | 'call'): Promise<AuditResult> {
-  const response = await fetch(`${API_URL}/api/ai/audit`, {
+  const response = await fetch(getApiUrl('/api/ai/audit'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -42,7 +41,7 @@ export async function auditTranscript(transcript: string, type: 'chat' | 'call')
 
 export async function transcribeAudio(base64Data: string, mimeType: string): Promise<string> {
   // We send the base64 string to the backend to keep the Gemini API key secure
-  const response = await fetch(`${API_URL}/api/ai/transcribe`, {
+  const response = await fetch(getApiUrl('/api/ai/transcribe'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

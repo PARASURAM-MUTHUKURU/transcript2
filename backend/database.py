@@ -6,8 +6,10 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 # Load environment variables
-env_path = Path(__file__).parent / ".env.local"
-load_dotenv(env_path)
+# In production, these are usually provided by the container environment.
+# Locally, we use .env.local or .env.
+load_dotenv() # Searches for .env by default
+load_dotenv(".env.local") # Fallback to .env.local if present
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -42,3 +44,9 @@ def release_db_connection(conn):
             conn.close()
         except:
             pass
+def close_db_pool():
+    """Closes all connections in the pool."""
+    try:
+        db_pool.closeall()
+    except Exception:
+        pass
