@@ -12,6 +12,8 @@ load_dotenv() # Searches for .env by default
 load_dotenv(".env.local") # Fallback to .env.local if present
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.strip().strip("'").strip('"')
 
 # Initialize connection pool
 # minconn=1, maxconn=20 gives us a good balance for a standard web app
