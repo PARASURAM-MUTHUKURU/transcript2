@@ -95,9 +95,19 @@ function AppContent() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const res = await fetch(getApiUrl('/api/config'));
-        if (!res.ok) throw new Error('Failed to load config from backend');
+        const url = getApiUrl('/api/config');
+        console.log(`Fetching auth config from: ${url}`);
+        const res = await fetch(url);
+        
+        if (!res.ok) {
+           throw new Error(`Backend configuration endpoint returned ${res.status}: ${res.statusText}`);
+        }
+        
         const config = await res.json();
+        console.log("Auth config received:", { 
+          hasUrl: !!config.supabaseUrl, 
+          hasKey: !!config.supabaseAnonKey 
+        });
 
         if (config.supabaseUrl && config.supabaseAnonKey) {
           const client = initSupabase(config.supabaseUrl, config.supabaseAnonKey);
@@ -110,15 +120,17 @@ function AppContent() {
             });
           }
         } else {
-          throw new Error('Supabase configuration is missing in backend response');
+          throw new Error('Supabase configuration (URL or Anon Key) is missing in backend. Please check backend environment variables.');
         }
-      } catch (err) {
-        console.error("Failed to fetch auth config", err);
-        showToast("Authentication server unavailable. Please ensure backend is running.", "error");
+      } catch (err: any) {
+        console.error("Failed to initialize authentication:", err);
+        const message = err.message || "Unknown error";
+        showToast(`Authentication initialization failed: ${message}`, "error");
       } finally {
         setAuthInitialized(true);
       }
     };
+
 
     initAuth();
   }, [showToast]);

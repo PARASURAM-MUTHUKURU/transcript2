@@ -14,17 +14,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger("main")
 
-load_dotenv(".env.local")
+# Check for required API keys early
+GEMINI_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+if not GEMINI_KEY:
+    logger.error("CRITICAL: GEMINI_API_KEY or GOOGLE_API_KEY is missing from environment variables.")
+else:
+    logger.info("Validated Gemini/Google API key configuration.")
 
 from database import close_db_pool
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup logic
-    logger.info("Starting up Quality Auditor API...")
+    logger.info("Quality Auditor API: Engine starting up...")
     yield
     # Shutdown logic
-    logger.info("Shutting down Quality Auditor API...")
+    logger.info("Quality Auditor API: Shutting down...")
     close_db_pool()
 
 app = FastAPI(lifespan=lifespan)
@@ -41,19 +46,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers
-app.include_router(agents.router)
-app.include_router(audits.router)
-app.include_router(analytics.router)
-app.include_router(ai.router)
-app.include_router(rag.router)
-app.include_router(config.router)
-app.include_router(alerts.router)
-app.include_router(reports.router)
+# Include Routers with explicit logging
+try:
+    app.include_router(agents.router)
+    app.include_router(audits.router)
+    app.include_router(analytics.router)
+    app.include_router(ai.router)
+    app.include_router(rag.router)
+    app.include_router(config.router)
+    app.include_router(alerts.router)
+    app.include_router(reports.router)
+    logger.info("Successfully loaded all system routers.")
+except Exception as e:
+    logger.error(f"FAILED to load one or more routers: {str(e)}")
+    raise
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "version": "1.0.0"}
+    return {"status": "healthy", "version": "1.0.1"}
+
+@app.get("/")
+def root():
+    return {"message": "Quality Auditor API is running", "docs": "/docs"}
 
 if __name__ == "__main__":
     import uvicorn

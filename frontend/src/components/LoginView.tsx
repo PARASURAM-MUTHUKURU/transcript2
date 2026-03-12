@@ -18,8 +18,13 @@ export function LoginView({ onBack }: LoginViewProps) {
         setError(null);
         try {
             if (!supabase) {
-                throw new Error('Authentication client not initialized. Please refresh the page or check your connection.');
+                const isProduction = window.location.hostname !== 'localhost';
+                const errorMsg = isProduction 
+                    ? 'Authentication server unavailable. Please ensure your Vercel VITE_API_URL environment variable is set to your Railway backend URL.'
+                    : 'Authentication client not initialized. Ensure the backend is running on port 3000 and .env.local contains valid SUPABASE variables.';
+                throw new Error(errorMsg);
             }
+
             const { error } = await supabase.auth.signInWithPassword({
                 email,
                 password,

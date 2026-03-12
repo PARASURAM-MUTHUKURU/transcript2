@@ -1,5 +1,0 @@
-{
-  "name": "AuditAI: Support Quality Auditor",
-  "description": "GenAI-powered quality auditing platform for customer support. Analyzes transcripts for empathy, compliance, and resolution using Gemini LLM.",
-  "requestFramePermissions": ["microphone"]
-}

@@ -24,6 +24,7 @@ def get_db_connection():
     try:
         conn = db_pool.getconn()
         # Ping the connection to check if it's alive (often needed for Supabase idle timeout)
+
         try:
             with conn.cursor() as cur:
                 cur.execute("SELECT 1")
