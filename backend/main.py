@@ -51,6 +51,10 @@ app.include_router(config.router)
 app.include_router(alerts.router)
 app.include_router(reports.router)
 
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy", "version": "1.0.0"}
+
 if __name__ == "__main__":
     import uvicorn
     # Use environment variables for port/host in production
