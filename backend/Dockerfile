@@ -36,5 +36,5 @@ USER appuser
 
 EXPOSE 3000
 
-# Use gunicorn with uvicorn workers for production
-CMD ["gunicorn", "main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:3000"]
+# Standard Railway/Production port handling
+CMD sh -c "gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-3000}"
