@@ -1,11 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from auth_utils import get_current_user
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import json
 from database import get_db_connection, release_db_connection
 
-router = APIRouter(prefix="/api/audits", tags=["Audits"])
+router = APIRouter(prefix="/api/audits", tags=["Audits"], dependencies=[Depends(get_current_user)])
 
 class AuditRequest(BaseModel):
     agent_id: int

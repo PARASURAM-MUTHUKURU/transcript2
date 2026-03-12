@@ -1,7 +1,8 @@
 import os
 import json
 import base64
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from auth_utils import get_current_user
 from pydantic import BaseModel
 from google import genai
 from dotenv import load_dotenv
@@ -14,14 +15,11 @@ sys.path.append(str(BACKEND_PATH))
 from backoff_util import async_exponential_backoff
 from config.prompts import AUDIT_PROMPT_TEMPLATE, TRANSCRIBE_DIARIZATION_PROMPT
 
-# Load environment variables
-env_path = BACKEND_PATH / ".env.local"
-load_dotenv(env_path)
-
+# Environment variables already loaded in main.py
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-router = APIRouter(prefix="/api/ai", tags=["AI"])
+router = APIRouter(prefix="/api/ai", tags=["AI"], dependencies=[Depends(get_current_user)])
 
 class AuditAIRequest(BaseModel):
     transcript: str

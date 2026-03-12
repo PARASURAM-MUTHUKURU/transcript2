@@ -1,4 +1,4 @@
-import { getApiUrl } from '../lib/api';
+import { fetchWithAuth } from '../lib/api';
 
 export interface RAGSource {
     source: string;
@@ -12,7 +12,7 @@ export interface RAGQueryResponse {
 }
 
 export async function queryRAG(question: string): Promise<RAGQueryResponse> {
-    const response = await fetch(getApiUrl('/api/rag/query'), {
+    const response = await fetchWithAuth('/api/rag/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question }),
@@ -25,7 +25,7 @@ export async function ingestFile(file: File): Promise<{ status: string; filename
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(getApiUrl('/api/rag/ingest'), {
+    const response = await fetchWithAuth('/api/rag/ingest', {
         method: 'POST',
         body: formData,
     });

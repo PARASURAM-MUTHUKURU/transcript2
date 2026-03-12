@@ -1,4 +1,5 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Depends
+from auth_utils import get_current_user
 from pydantic import BaseModel
 import shutil
 from pathlib import Path
@@ -10,7 +11,7 @@ RAG_PATH = BACKEND_PATH / "rag"
 sys.path.append(str(RAG_PATH))
 from src.pipeline import RAGPipeline
 
-router = APIRouter(prefix="/api/rag", tags=["RAG"])
+router = APIRouter(prefix="/api/rag", tags=["RAG"], dependencies=[Depends(get_current_user)])
 rag_pipeline = RAGPipeline()
 
 class RAGQueryRequest(BaseModel):

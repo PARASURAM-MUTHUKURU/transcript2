@@ -14,17 +14,25 @@ class GeminiEmbedder:
 
     @exponential_backoff(max_retries=3)
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+            
+        all_embeddings = []
+        batch_size = 16 # Safe batch size for Gemini embedding API
+        
         try:
-            # The new SDK supports list of texts in one call
-            result = self.client.models.embed_content(
-                model=self.model,
-                contents=texts,
-                config={
-                    "task_type": "retrieval_document",
-                    "output_dimensionality": self.dimension
-                }
-            )
-            return [e.values for e in result.embeddings]
+            for i in range(0, len(texts), batch_size):
+                batch = texts[i:i + batch_size]
+                result = self.client.models.embed_content(
+                    model=self.model,
+                    contents=batch,
+                    config={
+                        "task_type": "retrieval_document",
+                        "output_dimensionality": self.dimension
+                    }
+                )
+                all_embeddings.extend([e.values for e in result.embeddings])
+            return all_embeddings
         except Exception as e:
             print(f"Embedding failed: {e}")
             return []

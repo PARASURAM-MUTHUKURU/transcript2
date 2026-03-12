@@ -21,3 +21,5 @@ langchain-google-genai
 langchain-core
 langchain-text-splitters
 python-magic
+supabase
+python-jose[cryptography]

@@ -37,7 +37,7 @@ import { DashboardView } from './components/DashboardView';
 import { ThemeProvider, ThemeToggle } from './components/ThemeToggle';
 import { ToastProvider, useToast } from './components/Toasts';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { getApiUrl } from './lib/api';
+import { getApiUrl, fetchWithAuth } from './lib/api';
 
 import { LoginView } from './components/LoginView';
 import { AgentPortalView } from './components/AgentPortalView';
@@ -155,17 +155,19 @@ function AppContent() {
   }, [view, session]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (session) {
+      fetchData();
+    }
+  }, [session]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [agentsRes, auditsRes, analyticsRes, alertsRes] = await Promise.all([
-        fetch(getApiUrl('/api/agents')),
-        fetch(getApiUrl('/api/audits')),
-        fetch(getApiUrl('/api/analytics')),
-        fetch(getApiUrl('/api/alerts?resolved=false'))
+        fetchWithAuth('/api/agents'),
+        fetchWithAuth('/api/audits'),
+        fetchWithAuth('/api/analytics'),
+        fetchWithAuth('/api/alerts?resolved=false')
       ]);
 
       const agentsData = await agentsRes.json();
@@ -173,10 +175,18 @@ function AppContent() {
       const analyticsData = await analyticsRes.json();
       const alertsData = await alertsRes.json();
 
-      const parsedAudits = auditsData.map((a: any) => ({
-        ...a,
-        violations: typeof a.violations === 'string' ? JSON.parse(a.violations) : a.violations
-      }));
+      const parsedAudits = auditsData.map((a: any) => {
+        let violations = a.violations;
+        if (typeof violations === 'string') {
+          try {
+            violations = JSON.parse(violations);
+          } catch (e) {
+            console.error("Failed to parse violations for audit:", a.id, e);
+            violations = [];
+          }
+        }
+        return { ...a, violations };
+      });
 
       setAgents(agentsData);
       setAudits(parsedAudits);
@@ -208,7 +218,7 @@ function AppContent() {
         suggestions: result.suggestions
       };
 
-      const saveRes = await fetch(getApiUrl('/api/audits'), {
+      const saveRes = await fetchWithAuth('/api/audits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(auditPayload)
@@ -229,7 +239,7 @@ function AppContent() {
 
   const handleDeleteAudit = async (auditId: number) => {
     try {
-      const response = await fetch(getApiUrl(`/api/audits/${auditId}`), { method: 'DELETE' });
+      const response = await fetchWithAuth(`/api/audits/${auditId}`, { method: 'DELETE' });
       if (response.ok) {
         setAudits(prev => prev.filter(a => a.id !== auditId));
         if (selectedAudit?.id === auditId) {

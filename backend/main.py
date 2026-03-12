@@ -3,8 +3,13 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import agents, audits, analytics, ai, rag, config, alerts, reports
 from dotenv import load_dotenv
+
+# Load environment variables early
+load_dotenv()
+load_dotenv(".env.local")
+
+from routers import agents, audits, analytics, ai, rag, config, alerts, reports
 
 # Setup logging
 logging.basicConfig(

@@ -184,7 +184,9 @@ export const ReportsView = memo(({ analytics, audits, userRole = 'supervisor' }:
 
     if (isPdf) {
       const metricsParam = selectedMetrics.join(',');
-      window.open(`/api/reports/export/summary?metrics=${encodeURIComponent(metricsParam)}`, '_blank');
+      downloadFileWithAuth(`/api/reports/export/summary?metrics=${encodeURIComponent(metricsParam)}`, `${name.replace(/\s+/g, '_')}.pdf`)
+        .then(() => showToast('Summary Report downloaded', 'success'))
+        .catch(() => showToast('Failed to export Summary Report', 'error'));
       showToast('Exporting Summary Report...', 'info');
       return;
     }
@@ -192,7 +194,9 @@ export const ReportsView = memo(({ analytics, audits, userRole = 'supervisor' }:
     if (format === 'Detailed PDF (Backend)') {
       // Assuming we take the most recent audit for the "detailed" version in this specific builder
       if (audits.length > 0) {
-        window.open(`/api/reports/export/pdf/${audits[0].id}`, '_blank');
+        downloadFileWithAuth(`/api/reports/export/pdf/${audits[0].id}`, `audit_${audits[0].id}_detailed.pdf`)
+          .then(() => showToast('Detailed PDF downloaded', 'success'))
+          .catch(() => showToast('Failed to export Detailed PDF', 'error'));
         showToast('Exporting Detailed PDF...', 'info');
       } else {
         showToast('No audits found for detailed report.', 'error');
@@ -410,7 +414,12 @@ export const ReportsView = memo(({ analytics, audits, userRole = 'supervisor' }:
                         <p className="text-[10px] text-zinc-500 font-black uppercase">{audit.agent_name}</p>
                       </div>
                       <button
-                        onClick={() => window.open(`/api/reports/export/pdf/${audit.id}`, '_blank')}
+                        onClick={() => {
+                          downloadFileWithAuth(`/api/reports/export/pdf/${audit.id}`, `audit_${audit.id}_detailed.pdf`)
+                            .then(() => showToast(`Audit #${audit.id} PDF downloaded`, 'success'))
+                            .catch(() => showToast('Failed to download PDF', 'error'));
+                          showToast('Starting download...', 'info');
+                        }}
                         className="p-2 hover:bg-brand-accent/10 rounded-xl transition-colors text-zinc-500 hover:text-brand-accent"
                         title="Download Detailed PDF"
                       >

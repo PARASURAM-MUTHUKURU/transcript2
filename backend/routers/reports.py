@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, Response, Query
+import os
+from fastapi import APIRouter, HTTPException, Response, Query, Depends
+from auth_utils import get_current_user
 from typing import Optional
 from psycopg2.extras import RealDictCursor
 from database import get_db_connection, release_db_connection
@@ -7,16 +9,18 @@ import pandas as pd
 import io
 import json
 
-router = APIRouter(prefix="/api/reports", tags=["Reports"])
+router = APIRouter(prefix="/api/reports", tags=["Reports"], dependencies=[Depends(get_current_user)])
 
 class PDF(FPDF):
     def header(self):
         # Logo
         try:
-            logo_path = r"C:\Users\ASUS\.gemini\antigravity\brain\8e9ec424-ddef-4b0b-a9e0-25b99af744f8\genai_audit_logo_1773148944090.png"
-            self.image(logo_path, 10, 8, 33)
-        except:
-            pass
+            # Look for logo in ENV or default location
+            logo_path = os.getenv("REPORT_LOGO_PATH", "assets/logo.png")
+            if os.path.exists(logo_path):
+                self.image(logo_path, 10, 8, 33)
+        except Exception as e:
+            print(f"Header Logo Error: {e}")
             
         # Title
         self.set_font('Helvetica', 'B', 20)

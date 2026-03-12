@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from auth_utils import get_current_user
 from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
 from typing import List, Optional
 from database import get_db_connection, release_db_connection
 
-router = APIRouter(prefix="/api/alerts", tags=["Alerts"])
+router = APIRouter(prefix="/api/alerts", tags=["Alerts"], dependencies=[Depends(get_current_user)])
 
 class Alert(BaseModel):
     id: int

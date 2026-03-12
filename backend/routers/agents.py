@@ -1,8 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from auth_utils import get_current_user
 from psycopg2.extras import RealDictCursor
 from database import get_db_connection, release_db_connection
 
-router = APIRouter(prefix="/api/agents", tags=["Agents"])
+router = APIRouter(prefix="/api/agents", tags=["Agents"], dependencies=[Depends(get_current_user)])
 
 @router.get("")
 def get_agents():

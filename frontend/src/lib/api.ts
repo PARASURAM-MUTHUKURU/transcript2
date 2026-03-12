@@ -15,3 +15,53 @@ export const getApiUrl = (path: string) => {
   return `${baseUrl}${cleanPath}`;
 };
 
+/**
+ * Enhanced fetch that automatically adds the Supabase Authorization header if a session exists.
+ */
+export const fetchWithAuth = async (path: string, options: RequestInit = {}) => {
+  const { getSupabase } = await import('./supabase');
+  let supabase;
+  try {
+     supabase = getSupabase();
+  } catch (e) {
+     // If supabase is not yet initialized, just do a normal fetch or throw
+     console.warn("Supabase not initialized, sending request without auth");
+  }
+
+  const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+  const token = session?.access_token;
+
+  const headers = new Headers(options.headers || {});
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  return fetch(getApiUrl(path), {
+    ...options,
+    headers
+  });
+};
+
+/**
+ * Helper to download files with authentication header.
+ */
+export const downloadFileWithAuth = async (path: string, filename: string) => {
+  try {
+    const response = await fetchWithAuth(path);
+    if (!response.ok) throw new Error('Download failed');
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    throw error;
+  }
+};
+

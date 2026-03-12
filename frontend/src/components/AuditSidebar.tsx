@@ -4,6 +4,8 @@ import { cn } from '../lib/utils';
 import { Audit } from '../types';
 import { ScoreBar } from './ScoreBar';
 import { Waveform } from './Waveform';
+import { downloadFileWithAuth } from '../lib/api';
+import { useToast } from './Toasts';
 
 interface AuditSidebarProps {
   selectedAudit: Audit;
@@ -11,6 +13,7 @@ interface AuditSidebarProps {
 }
 
 export const AuditSidebar = ({ selectedAudit, userRole = 'supervisor' }: AuditSidebarProps) => {
+  const { showToast } = useToast();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -132,7 +135,12 @@ export const AuditSidebar = ({ selectedAudit, userRole = 'supervisor' }: AuditSi
 
         {userRole !== 'agent' && (
           <button
-            onClick={() => window.open(`/api/reports/export/pdf/${selectedAudit.id}`, '_blank')}
+            onClick={() => {
+              downloadFileWithAuth(`/api/reports/export/pdf/${selectedAudit.id}`, `audit_${selectedAudit.id}_detailed.pdf`)
+                .then(() => showToast(`Audit #${selectedAudit.id} PDF downloaded`, 'success'))
+                .catch(() => showToast('Failed to download PDF', 'error'));
+              showToast('Starting download...', 'info');
+            }}
             className="w-full py-4 bg-brand-surface border border-brand-border rounded-2xl flex items-center justify-center gap-3 text-xs font-bold uppercase tracking-widest hover:border-brand-accent hover:text-brand-accent transition-all group"
           >
             <FileText size={18} className="text-zinc-500 group-hover:text-brand-accent transition-colors" />
